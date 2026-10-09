@@ -1,0 +1,154 @@
+# Tests
+
+## Test 1 - Keep homepage focused without utility cards [sanity]
+Viewport: desktop
+Covers: homepage content hierarchy, removal of Send a Gist/Get Alerts/Join utility cards from homepage
+Description: Verifies the homepage no longer shows the utility cards that belong to dedicated sections while preserving the main campus content.
+Steps:
+1. Open the FUNAI SPEAKER TV homepage
+2. Scroll through the What's happening section
+Expected: Send a Gist, Get Alerts, and Join/Join the conversation utility cards are not displayed on the homepage.
+
+## Test 2 - Open the dedicated Gist action from the Gist tab
+Viewport: mobile
+Covers: Gist tab navigation, Send a Gist placement, anonymous styled gist submission entry point
+Description: Verifies the Send a Gist action is available in the Gist section rather than the homepage.
+Steps:
+1. Open FUNAI SPEAKER TV
+2. Tap Gist in the bottom navigation
+3. Tap Send a Gist
+Expected: The Gist section shows the Send a Gist action and opens the anonymous styled gist composer.
+
+## Test 3 - Keep breaking-update alerts inside News
+Viewport: mobile
+Covers: News tab navigation, Get Alerts placement, notification subscription action
+Description: Verifies Get Alerts is available from the News section and not from unrelated sections.
+Steps:
+1. Open FUNAI SPEAKER TV
+2. Tap News in the bottom navigation
+3. Locate Get Alerts
+Expected: Get Alerts is visible in the News section with its breaking campus updates label; it is not shown as a homepage utility card.
+
+## Test 4 - Submit an anonymous styled gist without a story title
+Viewport: mobile
+Covers: gist style selector, body-only validation, POST /api/submissions, newsroom review queue
+Description: Verifies the dedicated Gist workflow still accepts a styled anonymous body and submits it for moderation.
+Steps:
+1. Open the Gist tab
+2. Tap Send a Gist
+3. Choose HOT TEA
+4. Enter a gist in the card editor
+5. Tap Submit for review
+Expected: A confirmation appears and the gist is submitted to the newsroom review queue as anonymous content without requiring a story title.
+
+## Test 5 - Keep public email subscription removed
+Viewport: desktop
+Covers: public newsletter removal, homepage content hierarchy
+Description: Verifies the public site no longer presents an email address subscription form or Subscribe action.
+Steps:
+1. Open the homepage
+2. Scroll through the full page
+Expected: No public email subscription field, Subscribe button, or newsletter signup section is displayed.
+
+## Test 6 - Contact JR from the footer credit [sanity]
+Viewport: mobile
+Covers: footer Developed by JR link, WhatsApp deep link, responsive footer placement
+Description: Verifies the footer developer credit opens the requested WhatsApp conversation.
+Steps:
+1. Open FUNAI SPEAKER TV on mobile
+2. Scroll to the bottom of the footer
+3. Tap Developed by JR
+Expected: WhatsApp opens for 07089523006 with the requested prefilled enquiry message.
+
+## Test 7 - Use the professional site footer on mobile
+Viewport: mobile
+Covers: footer restructure, Explore links, Get in touch links, Nigeria and All rights reserved labels, Add to Home Screen guidance, responsive footer layout
+Description: Verifies the redesigned footer remains complete and usable on a phone without covering or collapsing its important links.
+Steps:
+1. Open FUNAI SPEAKER TV on a mobile viewport
+2. Scroll to the bottom of the page
+3. Verify the FUNAI SPEAKER TV brand block, Explore links, Get in touch section and Add to Home Screen action are visible
+4. Verify the bottom line contains All rights reserved and Nigeria
+Expected: The footer is cleanly stacked, all sections are readable and tappable, and no footer content overlaps or is clipped.
+
+## Test 8 - Open the More menu with distinct navigation cards
+Viewport: mobile
+Covers: More menu card layout, clickable navigation items, mobile responsive spacing
+Description: Verifies the More menu renders each option as a separate readable UI control rather than collapsed text.
+Steps:
+1. Open the top-left More menu
+2. Inspect the CAMPUS and INFORMATION sections
+3. Tap Trending, then reopen More
+Expected: Each option is displayed as its own padded card/row with an icon, title, description and right-aligned chevron, with clear spacing between controls and no text collision.
+
+## Test 9 - Delete a newsroom story as an authenticated admin [sanity]
+Viewport: desktop
+Covers: Admin Dashboard story deletion, DELETE /api/admin/posts/:id authorization, cascade cleanup, durable deletion after reload
+Description: Verifies an unlocked administrator can permanently delete a story from the Story library and the deleted story is no longer returned by the dashboard.
+Setup:
+1. Sign in to the Admin Dashboard with the configured admin password
+2. Create a story titled "Delete this newsroom story"
+Steps:
+1. Open Newsroom / Story library
+2. Open the story action menu for "Delete this newsroom story"
+3. Choose Delete story
+4. Confirm the permanent deletion
+5. Refresh the Story library
+Expected: A Story deleted confirmation appears, "Delete this newsroom story" is absent from the Story library, and its related comments/reactions/analytics are also removed.
+
+## Test 10 - Display comment age from the stored creation timestamp
+Viewport: mobile
+Covers: comment creation, backend createdAt timestamp, dynamic relative-time rendering
+Description: Verifies a newly posted comment is given a real creation timestamp and the public comment display uses that timestamp rather than permanently showing a hard-coded Just now label.
+Steps:
+1. Open a story and open its comments
+2. Enter a valid display name if prompted
+3. Submit a new comment
+4. View the submitted comment
+Expected: The new comment initially shows a relative time such as Just now, and its stored timestamp is available for later relative-time calculation such as 1m ago, 2h ago, or 1d ago instead of remaining permanently hard-coded.
+
+## Test 11 - Present story posts as segmented media cards
+Viewport: mobile
+Covers: public story card visual hierarchy, category/time metadata, headline/excerpt segmentation, author block, like/comment/share controls, responsive post layout
+Description: Verifies public stories are presented as structured media cards rather than a plain block of text while retaining the existing interactions.
+Steps:
+1. Open the News feed with at least one published story
+2. Inspect the story card
+3. Tap the story headline to open it
+Expected: The card has a distinct media area, category/time metadata, prominent headline, readable excerpt, separated author information and clearly grouped interaction controls; tapping the headline still opens the story.
+
+## Test 12 - Keep published story media and timestamps durable
+Viewport: mobile
+Covers: storage-backed story image resolution, persisted createdAt timestamps, relative publication time, image refresh fallback
+Description: Verifies a published story continues to show its uploaded image and its publication age is calculated from the persisted creation timestamp.
+Steps:
+1. Open a published story that has a cover image
+2. Note the image and publication age
+3. Refresh the page and reopen the same story
+Expected: The cover image is still visible and the publication label reflects the real elapsed time such as minutes ago, hours ago, or days ago rather than resetting to Just now.
+
+## Test 13 - Show each reader comment once with readable spacing and age
+Viewport: mobile
+Covers: comments API, comment deduplication, vertical comment spacing, persisted comment timestamps
+Description: Verifies the article comment section renders each stored comment once with clear separation and a real relative timestamp.
+Steps:
+1. Open a story and open Reader comments
+2. Inspect multiple existing comments
+Expected: Each comment appears once, each comment has visible vertical separation from the next, and its timestamp reflects its stored age such as minutes ago or hours ago rather than remaining permanently Just now.
+Viewport: mobile
+Covers: public story card visual hierarchy, category/time metadata, headline/excerpt segmentation, author block, like/comment/share controls, responsive post layout
+Description: Verifies public stories are presented as structured media cards rather than a plain block of text while retaining the existing interactions.
+Steps:
+1. Open the News feed with at least one published story
+2. Inspect the story card
+3. Tap the story headline to open it
+Expected: The card has a distinct media area, category/time metadata, prominent headline, readable excerpt, separated author information and clearly grouped interaction controls; tapping the headline still opens the story.
+Viewport: mobile
+Covers: comment creation, backend createdAt timestamp, dynamic relative-time rendering
+Description: Verifies a newly posted comment is given a real creation timestamp and the public comment display uses that timestamp rather than permanently showing a hard-coded Just now label.
+Steps:
+1. Open a story and open its comments
+2. Enter a valid display name if prompted
+3. Submit a new comment
+4. View the submitted comment
+Expected: The new comment initially shows a relative time such as Just now, and its stored timestamp is available for later relative-time calculation such as 1m ago, 2h ago, or 1d ago instead of remaining permanently hard-coded.

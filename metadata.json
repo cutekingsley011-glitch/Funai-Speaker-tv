@@ -1,0 +1,6 @@
+{
+  "name": "FUNAI SPEAKER TV",
+  "description": "Your Campus. Unfiltered. Full-stack campus media platform for the Nigerian university community.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

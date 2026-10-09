@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="theme-color" content="#135fae"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="FUNAI SPEAKER TV"><meta name="mobile-web-app-capable" content="yes">
+    <title>FUNAI SPEAKER TV — Your Campus. Unfiltered.</title><meta name="description" content="FUNAI SPEAKER TV — your campus, unfiltered. Get the latest FUNAI campus news, updates, events, gists, polls and conversations, all in one place."><meta property="og:title" content="FUNAI SPEAKER TV — Your Campus. Unfiltered."><meta property="og:description" content="Your campus, unfiltered. Get FUNAI campus news, updates, events, gists, polls and conversations in one place."><meta property="og:type" content="website"><meta property="og:url" content="https://funaispeakertv.com"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="FUNAI SPEAKER TV — Your Campus. Unfiltered."><meta name="twitter:description" content="Your campus, unfiltered. Get FUNAI campus news, updates, events, gists, polls and conversations in one place.">
+    <script>
+      // Stabilize preview environment: disable HMR WebSockets & prevent disconnection reload loops
+      (function() {
+        var NativeWebSocket = window.WebSocket;
+        if (NativeWebSocket) {
+          function MockViteWebSocket(url, protocols) {
+            var listeners = {};
+            this.url = url || '';
+            this.protocol = Array.isArray(protocols) ? protocols.join(', ') : (protocols || '');
+            this.readyState = 1; // WebSocket.OPEN
+            this.OPEN = 1;
+            this.CONNECTING = 0;
+            this.CLOSING = 2;
+            this.CLOSED = 3;
+            this.bufferedAmount = 0;
+            this.binaryType = 'blob';
+            this.extensions = '';
+            this.onopen = null;
+            this.onclose = null;
+            this.onerror = null;
+            this.onmessage = null;
+            this.addEventListener = function(event, fn) {
+              if (!listeners[event]) listeners[event] = [];
+              listeners[event].push(fn);
+            };
+            this.removeEventListener = function(event, fn) {
+              if (listeners[event]) {
+                listeners[event] = listeners[event].filter(function(cb) { return cb !== fn; });
+              }
+            };
+            this.dispatchEvent = function() { return true; };
+            this.send = function() {};
+            this.close = function() {
+              this.readyState = 3;
+            };
+          }
+          MockViteWebSocket.CONNECTING = 0;
+          MockViteWebSocket.OPEN = 1;
+          MockViteWebSocket.CLOSING = 2;
+          MockViteWebSocket.CLOSED = 3;
+
+          window.WebSocket = function(url, protocols) {
+            var isViteHmr = false;
+            if (protocols === 'vite-hmr' || (Array.isArray(protocols) && protocols.indexOf('vite-hmr') !== -1)) {
+              isViteHmr = true;
+            } else if (typeof url === 'string' && (url.indexOf('token=') !== -1 || url.indexOf('24678') !== -1 || url.indexOf('vite') !== -1)) {
+              isViteHmr = true;
+            }
+            if (isViteHmr) {
+              return new MockViteWebSocket(url, protocols);
+            }
+            return new NativeWebSocket(url, protocols);
+          };
+          window.WebSocket.prototype = NativeWebSocket.prototype;
+          window.WebSocket.CONNECTING = 0;
+          window.WebSocket.OPEN = 1;
+          window.WebSocket.CLOSING = 2;
+          window.WebSocket.CLOSED = 3;
+        }
+
+        // Suppress any WebSocket/Vite unhandled rejections
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = e.reason;
+          var msg = (reason && (reason.message || reason.stack || String(reason))) || '';
+          if (msg.indexOf('WebSocket') !== -1 || msg.indexOf('@vite/client') !== -1 || msg.indexOf('vite-hmr') !== -1) {
+            e.preventDefault();
+          }
+        });
+      })();
+    </script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2661777971131875" crossorigin="anonymous"></script></head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

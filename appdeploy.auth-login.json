@@ -1,0 +1,18 @@
+{
+  "methods": [
+    "google",
+    "apple",
+    "x"
+  ],
+  "headline": "Join FUNAI SPEAKER TV",
+  "subtitle": "Sign in to comment, save stories and stay connected to campus.",
+  "style": {
+    "mode": "light",
+    "accentColor": "#135fae",
+    "backgroundColor": "#eef5fb",
+    "panelColor": "#ffffff",
+    "textColor": "#10243e",
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "borderRadius": 16
+  }
+}
