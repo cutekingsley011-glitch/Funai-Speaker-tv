@@ -162,21 +162,37 @@ export const storage = {
         content: item.content,
         contentType: item.contentType || 'image/png',
       });
+      // Save directly to disk in public/ and dist/
+      try {
+        const publicPath = path.resolve(process.cwd(), 'public', item.path);
+        const dir = path.dirname(publicPath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(publicPath, Buffer.from(item.content, 'base64'));
+
+        const distPath = path.resolve(process.cwd(), 'dist', item.path);
+        const distDir = path.dirname(distPath);
+        if (fs.existsSync(path.resolve(process.cwd(), 'dist'))) {
+          if (!fs.existsSync(distDir)) fs.mkdirSync(distDir, { recursive: true });
+          fs.writeFileSync(distPath, Buffer.from(item.content, 'base64'));
+        }
+      } catch (err) {
+        console.error('[storage.write] disk write error:', err);
+      }
     }
     return items.map(() => true);
   },
 
   url: async (paths: string[]): Promise<Array<{ url: string }>> => {
     return paths.map((p) => {
-      const found = storageMap.get(p);
-      if (found) {
-        return { url: `data:${found.contentType};base64,${found.content}` };
-      }
       if (p === 'branding/logo.png' || p?.endsWith('logo.png')) {
         return { url: '/branding/logo.png' };
       }
       if (p && (p.startsWith('uploads/') || p.startsWith('/uploads/'))) {
         return { url: p.startsWith('/') ? p : `/${p}` };
+      }
+      const found = storageMap.get(p);
+      if (found) {
+        return { url: `data:${found.contentType};base64,${found.content}` };
       }
       return { url: p ? (p.startsWith('http') ? p : `/${p}`) : '' };
     });
