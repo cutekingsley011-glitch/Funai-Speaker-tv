@@ -1,3 +1,4 @@
+import staticBackupData from '../../data-backup.json';
 /**
  * @appdeploy/sdk implementation for FUNAI SPEAKER TV
  * Provides in-memory document database, storage, router, and auth
@@ -22,29 +23,35 @@ class MemoryDatabase {
 
   private loadInitialData() {
     try {
+      let data: any = null;
       if (fs.existsSync(this.backupFile)) {
-        const raw = fs.readFileSync(this.backupFile, 'utf-8');
-        const data = JSON.parse(raw);
-
-        const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity'];
-        for (const col of collections) {
-          if (Array.isArray(data[col])) {
-            const table = this.getTable(col);
-            for (const item of data[col]) {
-              if (item.id) table.set(item.id, item);
-            }
+        try {
+          const raw = fs.readFileSync(this.backupFile, 'utf-8');
+          data = JSON.parse(raw);
+        } catch (e) {
+          console.warn('[MemoryDatabase] Could not parse disk backup, using fallback');
+        }
+      }
+      if (!data || !Array.isArray(data.posts) || data.posts.length === 0) {
+        data = staticBackupData;
+      }
+      const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity'];
+      for (const col of collections) {
+        if (Array.isArray(data[col])) {
+          const table = this.getTable(col);
+          for (const item of data[col]) {
+            if (item.id) table.set(item.id, item);
           }
         }
-
-        const brandingTable = this.getTable('site_branding');
-        brandingTable.set('default', {
-          id: 'default',
-          logoPath: data.branding?.logoUrl || 'branding/logo.png',
-          updatedAt: Date.now(),
-        });
       }
+      const brandingTable = this.getTable('site_branding');
+      brandingTable.set('default', {
+        id: 'default',
+        logoPath: data.branding?.logoUrl || 'branding/logo.png',
+        updatedAt: Date.now(),
+      });
     } catch (err) {
-      console.error('[MemoryDatabase] Failed to load data-backup.json:', err);
+      console.error('[MemoryDatabase] Failed to load initial data:', err);
     }
   }
 
@@ -204,7 +211,7 @@ export const secrets = {
   readSecret: async (key: string): Promise<string | null> => {
     if (process.env[key]) return process.env[key]!;
     if (key === 'FSTV_ADMIN_PASSWORD') {
-      return process.env.FSTV_ADMIN_PASSWORD || '2026';
+      return process.env.FSTV_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD || 'Speaker6969';
     }
     return null;
   },
@@ -251,7 +258,7 @@ export function router(routesMap: Record<string, any[] | Function>) {
     const routePath = parts[1];
     const handlerList = Array.isArray(handlers) ? handlers : [handlers];
 
-    (expressRouter as any)[method](routePath, async (req: Request, res: Response) => {
+    const expressHandler = async (req: Request, res: Response) => {
       const c = {
         req,
         res,
@@ -283,7 +290,13 @@ export function router(routesMap: Record<string, any[] | Function>) {
         console.error(`[Error in ${routeKey}]:`, err);
         return res.status(500).json({ error: err?.message || 'Internal Server Error' });
       }
-    });
+    };
+
+    (expressRouter as any)[method](routePath, expressHandler);
+    if (routePath.startsWith('/api/')) {
+      const altPath = routePath.replace(/^\/api/, '');
+      (expressRouter as any)[method](altPath, expressHandler);
+    }
   }
 
   return expressRouter;

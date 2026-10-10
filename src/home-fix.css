@@ -226,12 +226,61 @@ body {
 .post-image {
   width: 260px !important;
   min-height: 220px !important;
-  background: #0f172a !important;
+  background: #091322 !important;
   position: relative !important;
   overflow: hidden !important;
   flex: none !important;
   padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.post-image .media-img-wrapper {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 220px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #091322 !important;
+  overflow: hidden !important;
+}
+
+.post-image .media-main-img,
+.post-image img.media-main-img,
+.post-image img {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
   display: block !important;
+  z-index: 2 !important;
+  background: transparent !important;
+}
+
+.cover-preview {
+  width: 100% !important;
+  max-height: 280px !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  background: #091322 !important;
+  border-radius: 12px !important;
+  margin-top: 10px !important;
+  display: block !important;
+}
+
+.story-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  background: #091322 !important;
 }
 
 /* Ambient glow using the photo's own colors to eliminate black empty bars */
@@ -594,8 +643,8 @@ body {
   }
   .post-image {
     width: 100% !important;
-    height: 205px !important;
-    min-height: 205px !important;
+    height: 230px !important;
+    min-height: 230px !important;
   }
   .post-body {
     padding: 20px 18px !important;

@@ -1,0 +1,22 @@
+{
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "data-backup.json"
+    },
+    "api/[...path].ts": {
+      "includeFiles": "data-backup.json"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!api|uploads|branding).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

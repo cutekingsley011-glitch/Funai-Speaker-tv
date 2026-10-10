@@ -873,6 +873,78 @@
       "detail": "Successful newsroom unlock",
       "time": 1791590231489,
       "id": "id_1791590231489_fpe0e3d"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664120612,
+      "id": "id_1791664120612_a3xzxvh"
+    },
+    {
+      "action": "Failed admin login",
+      "detail": "Failed attempt 1 of 5",
+      "time": 1791664120632,
+      "id": "id_1791664120632_1gqua3j"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664734558,
+      "id": "id_1791664734558_lkplbkz"
+    },
+    {
+      "action": "Failed admin login",
+      "detail": "Failed attempt 1 of 5",
+      "time": 1791664734564,
+      "id": "id_1791664734564_px69b09"
+    },
+    {
+      "action": "Failed admin login",
+      "detail": "Failed attempt 2 of 5",
+      "time": 1791664734568,
+      "id": "id_1791664734568_slb55jq"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664818817,
+      "id": "id_1791664818817_ctskx2t"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664818822,
+      "id": "id_1791664818822_n7au0x5"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664818826,
+      "id": "id_1791664818826_dvwwrn3"
+    },
+    {
+      "action": "Failed admin login",
+      "detail": "Incorrect password attempt",
+      "time": 1791664818830,
+      "id": "id_1791664818830_wb92mx4"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664919576,
+      "id": "id_1791664919576_3j0rl4p"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664919582,
+      "id": "id_1791664919582_a2e07ps"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791664919586,
+      "id": "id_1791664919586_ium9chy"
     }
   ],
   "branding": {
