@@ -773,6 +773,20 @@
       "joinedAt": 1791678975647,
       "joinedDate": "2026-10-11T00:36:15.647Z",
       "id": "id_1791678975647_mdfsom3"
+    },
+    {
+      "name": "Biggie",
+      "visitorKey": "b495e8a8-2439-411a-9743-09f4d633c50e",
+      "joinedAt": 1791679248886,
+      "joinedDate": "2026-10-11T00:40:48.886Z",
+      "id": "id_1791679248886_0u64tgr"
+    },
+    {
+      "name": "Emeka Nwosu",
+      "visitorKey": "vk-test-101",
+      "joinedAt": 1791679873320,
+      "joinedDate": "2026-10-11T00:51:13.320Z",
+      "id": "id_1791679873320_dpsa27w"
     }
   ],
   "newsletter": [
@@ -967,6 +981,12 @@
       "detail": "Successful newsroom unlock",
       "time": 1791664919586,
       "id": "id_1791664919586_ium9chy"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791679873316,
+      "id": "id_1791679873316_3hebi9b"
     }
   ],
   "branding": {
