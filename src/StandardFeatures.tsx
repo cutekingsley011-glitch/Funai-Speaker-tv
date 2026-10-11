@@ -1,7 +1,91 @@
 import {useEffect,useState} from 'react';
 import {api} from '@appdeploy/client';
 import {BookOpen,CalendarDays,Mail,ShieldCheck,Users,MessageCircle,X} from 'lucide-react';export function SiteLogo({className='brand-mark'}:{className?:string}){const[url,setUrl]=useState('');useEffect(()=>{let active=true;(async()=>{try{const r=await api.get('/api/branding');if(active&&r.data?.logoUrl)setUrl(r.data.logoUrl)}catch{}})();return()=>{active=false}},[]);return <b className={className}>{url?<img src={url} alt='FUNAI SPEAKER TV logo'/>:'FS'}</b>}
-export function WelcomeMember({visitorKey,close,onJoined}:{visitorKey:string;close:()=>void;onJoined:(name:string)=>void}){const[name,setName]=useState('');const[joined,setJoined]=useState(false);async function join(){const n=name.trim();if(!n)return;try{await api.post('/api/members',{name:n,visitorKey});localStorage.setItem('fstv-member-name',n);localStorage.setItem('fstv-member-joined','1');setJoined(true);onJoined(n);setTimeout(close,500)}catch{}}return <div className='modal-backdrop welcome-backdrop'><div className='modal welcome-card'><SiteLogo className='welcome-logo'/><div className='section-kicker'>FUNAI SPEAKER TV</div><h2>{joined?'Welcome to the family, '+name+'!':'Welcome to FUNAI SPEAKER TV'}</h2><p>{joined?'You are now a member of our campus community.':'Your campus TV for fun updates, news, gist, events and student voices.'}</p>{!joined&&<><div className='welcome-benefits'><span><BookOpen/> Campus news & gist</span><span><CalendarDays/> Events & polls</span><span><Users/> Join the conversation</span></div><input autoFocus value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')join()}} placeholder='Enter your name'/><button className='primary full' disabled={!name.trim()} onClick={join}>Join the conversation</button><small className='welcome-note'>Just your name. No password or email required.</small></>}</div></div>}
+export function WelcomeMember({visitorKey,close,onJoined}:{visitorKey:string;close:()=>void;onJoined:(name:string)=>void}){
+  const[name,setName]=useState('');
+  const[joined,setJoined]=useState(false);
+  const[loading,setLoading]=useState(false);
+
+  async function join(e?:React.FormEvent){
+    if(e)e.preventDefault();
+    const n=name.trim();
+    if(!n)return;
+
+    setLoading(true);
+    // 1. Instantly save name locally so member identity is established with 0ms latency
+    try{
+      localStorage.setItem('fstv-member-name',n);
+      localStorage.setItem('fstv-name',n);
+      localStorage.setItem('fstv-member-joined','1');
+    }catch{}
+
+    // 2. Optimistically update UI
+    setJoined(true);
+    onJoined(n);
+
+    // 3. Dispatch to backend asynchronously (fail-safe)
+    const safeKey = visitorKey || (typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'v-'+Date.now());
+    api.post('/api/members',{name:n,visitorKey:safeKey}).catch(err=>{
+      console.warn('Member backend sync:', err);
+    });
+
+    // 4. Smoothly close modal
+    setTimeout(()=>{
+      close();
+    }, 600);
+  }
+
+  return (
+    <div className='modal-backdrop welcome-backdrop' onClick={e=>{if(e.target===e.currentTarget)close();}}>
+      <div className='modal welcome-card' role='dialog' aria-modal='true'>
+        <button type='button' className='close' onClick={close} aria-label='Close welcome screen'>
+          <X size={18}/>
+        </button>
+        <SiteLogo className='welcome-logo'/>
+        <div className='section-kicker'>FUNAI SPEAKER TV</div>
+        <h2>{joined ? `Welcome to the family, ${name}!` : 'Welcome to FUNAI SPEAKER TV'}</h2>
+        <p>{joined ? 'You are now a member of our campus community. Opening campus feed...' : 'Your campus TV for fun updates, news, gist, events and student voices.'}</p>
+        
+        {!joined && (
+          <form onSubmit={join} className='welcome-form'>
+            <div className='welcome-benefits'>
+              <span><BookOpen/> Campus news & gist</span>
+              <span><CalendarDays/> Events & polls</span>
+              <span><Users/> Join the conversation</span>
+            </div>
+            <input
+              autoFocus
+              value={name}
+              onChange={e=>setName(e.target.value)}
+              placeholder='Enter your name (e.g. Kingsley)'
+              maxLength={50}
+            />
+            <button
+              type='submit'
+              className='primary full'
+              disabled={!name.trim() || loading}
+            >
+              {loading ? 'Joining newsroom...' : 'Join the conversation'}
+            </button>
+            <div className='welcome-footer-links'>
+              <button type='button' className='welcome-skip' onClick={close}>
+                Browse as guest / Skip for now
+              </button>
+            </div>
+            <small className='welcome-note'>Just your name. No password or email required.</small>
+          </form>
+        )}
+
+        {joined && (
+          <div className='welcome-success-badge'>
+            <span>🎉 You are in! Opening campus feed...</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function AboutPage({go}:{go:(v:string)=>void}){return <section className='info-page'><div className='info-hero'><span className='section-kicker'>ABOUT THE BRAND</span><h1>FUNAI SPEAKER TV</h1><p>Your campus. Unfiltered.</p></div><div className='info-grid'><article><Users/><h3>Our mission</h3><p>To give FUNAI students and the surrounding community a trusted, lively digital home for campus news, student voices, events, entertainment and everyday stories.</p></article><article><BookOpen/><h3>What we cover</h3><p>Campus news, student life, gist, events, polls, opinions, community submissions and breaking updates.</p></article><article><ShieldCheck/><h3>Our standard</h3><p>We aim to separate verified reporting, community submissions and opinion clearly while keeping the platform respectful and useful.</p></article></div><button className='secondary' onClick={()=>go('Contact')}>Contact FUNAI SPEAKER TV</button></section>}
 export function ContactPage(){const[done,setDone]=useState(false);return <section className='info-page'><div className='info-hero'><span className='section-kicker'>GET IN TOUCH</span><h1>Contact FUNAI SPEAKER TV</h1><p>News tips, partnerships, corrections and general enquiries.</p></div><div className='contact-grid'><a href='https://wa.me/2348138203351'><MessageCircle/><b>WhatsApp</b><span>+234 813 820 3351</span></a><a href='mailto:hello@funaispeakertv.com'><Mail/><b>Email</b><span>hello@funaispeakertv.com</span></a><div><BookOpen/><b>News tips</b><span>Use Send a Gist and choose anonymous or credited.</span></div></div>{done?<div className='success-box'>Thanks. Your message has been received.</div>:<button className='primary' onClick={()=>setDone(true)}>I'm ready to send a tip</button>}</section>}
 export function LegalPage({kind}:{kind:'privacy'|'terms'|'editorial'}){const data=kind==='privacy'?{title:'Privacy Policy',icon:<ShieldCheck/>,intro:'How FUNAI SPEAKER TV handles information used to operate community features.',sections:[['What we collect','We collect only the information needed to operate community features, such as a display name, member join record and comments. We do not ask for passwords for ordinary membership.'],['Your privacy','We aim to keep community participation respectful and avoid collecting unnecessary personal information.'],['Updates','This policy may be updated as the platform grows and new features are introduced.']]}:kind==='terms'?{title:'Terms of Use',icon:<BookOpen/>,intro:'Simple rules for using FUNAI SPEAKER TV responsibly and respectfully.',sections:[['Using the platform','Use FUNAI SPEAKER TV respectfully. Do not submit unlawful, abusive, knowingly false, invasive or harmful content. Community submissions may be moderated or rejected.'],['Community standards','Respect privacy, avoid harassment and do not submit material that could put another person at unnecessary risk.'],['Content moderation','Newsroom and community submissions may be reviewed before publication and may be removed when they violate these standards.'],['Updates','These terms may be updated as the platform grows and new features are introduced.']]}:{title:'Editorial Policy',icon:<BookOpen/>,intro:'The principles we use when publishing campus news, community stories and opinions.',sections:[['Newsroom standard','We distinguish newsroom stories from community submissions and opinion.'],['Corrections','Corrections should be reported promptly so inaccurate information can be reviewed and updated.'],['Breaking news','Breaking claims are reviewed before publication where reasonably possible.'],['Community submissions','Anonymous and credited submissions are treated as community material and may be moderated before publication.']]};return <section className='info-page legal-page'><div className='legal-hero'><div className='legal-icon'>{data.icon}</div><div><span className='section-kicker'>FUNAI SPEAKER TV • {kind.toUpperCase()}</span><h1>{data.title}</h1><p>{data.intro}</p></div></div><div className='legal-sections'>{data.sections.map(([title,text])=><article key={title}><div className='legal-section-number'>{String(data.sections.findIndex(s=>s[0]===title)+1).padStart(2,'0')}</div><div><h3>{title}</h3><p>{text}</p></div></article>)}</div><div className='legal-footer-card'><ShieldCheck/><div><strong>Community-first platform</strong><span>These guidelines help keep FUNAI SPEAKER TV useful, safe and respectful.</span></div></div></section>}
