@@ -3,6 +3,20 @@
  * Adapts AppDeploy client calls to standard browser fetch
  */
 
+function getAdminToken(): string {
+  if (typeof window !== 'undefined') {
+    try {
+      return localStorage.getItem('fstv-admin-token') || '';
+    } catch {}
+  }
+  return '';
+}
+
+function defaultHeaders(): Record<string, string> {
+  const token = getAdminToken();
+  return token ? { 'x-admin-token': token, 'Authorization': `Bearer ${token}` } : {};
+}
+
 export const api = {
   get: async (url: string, config?: Record<string, any>) => {
     let fullUrl = url;
@@ -19,7 +33,7 @@ export const api = {
       }
     }
     const res = await fetch(fullUrl, {
-      headers: { Accept: 'application/json', ...(config?.headers || {}) },
+      headers: { Accept: 'application/json', ...defaultHeaders(), ...(config?.headers || {}) },
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -34,6 +48,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...defaultHeaders(),
         ...(config?.headers || {}),
       },
       body: JSON.stringify(body ?? {}),
@@ -51,6 +66,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...defaultHeaders(),
         ...(config?.headers || {}),
       },
       body: JSON.stringify(body ?? {}),
@@ -83,6 +99,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...defaultHeaders(),
         ...(config?.headers || {}),
       },
       body: bodyData,

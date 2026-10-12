@@ -5,21 +5,21 @@
       "category": "Campus News",
       "views": 0,
       "featured": true,
-      "likes": 1,
+      "likes": 3,
       "workflow": "published",
       "token": "2493b2a5-c61b-4e96-b6cb-17729d7ad666",
       "time": "2w ago",
       "createdAt": 1790258711636,
-      "excerpt": "The National Examinations Council (NECO) has released the results of the 2026 Senior School Certificate Examination (SSCE).\n\nA total of 1,378,048 candidates registered for the examination, comprising 682,352 males and 695,696 females.",
+      "excerpt": "Updated excerpt",
       "body": "The National Examinations Council (NECO) has released the results of the 2026 Senior School Certificate Examination (SSCE).\n\nA total of 1,378,048 candidates registered for the examination, comprising 682,352 males and 695,696 females.Of the registered candidates, 1,371,992 sat for the examination, including 678,903 males and 693,089 females.\nNECO said 804,948 candidates, representing 58.67 per cent, obtained at least five credits including English Language and Mathematics.\nThe council also disclosed that 1,162,118 candidates, representing 84.70 per cent, obtained five credits and above irrespective of their performance in English Language and Mathematics.",
       "breaking": true,
       "status": "published",
       "imagePath": "uploads/1790258697325-1009630361.png",
       "published": true,
-      "title": "NECO Releases 2026 SSCE Results, 58.67% Secure Five Credits Including English, Maths",
+      "title": "Updated Title",
       "author": "FSTV Desk",
       "image": "/uploads/post-16beceef-6945-47c6-8c76-1765134417dc.png",
-      "comments": 0,
+      "comments": 1,
       "comments_list": []
     },
     {
@@ -448,6 +448,22 @@
       "author": "FSTV Desk",
       "workflow": "published",
       "comments_list": []
+    },
+    {
+      "title": "Test Post Title",
+      "excerpt": "Test excerpt",
+      "token": "2026",
+      "workflow": "published",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1791835827926,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": true,
+      "status": "published",
+      "id": "id_1791835827926_k0hevix"
     }
   ],
   "polls": [
@@ -456,7 +472,7 @@
       "options": [
         {
           "label": "Campus news",
-          "votes": 47
+          "votes": 48
         },
         {
           "votes": 25,
@@ -564,6 +580,16 @@
       "time": "Aug 27, 2026",
       "likes": 0,
       "status": "visible"
+    },
+    {
+      "postId": "16beceef-6945-47c6-8c76-1765134417dc",
+      "name": "Chidi",
+      "text": "This is great",
+      "time": "Just now",
+      "createdAt": 1791835827919,
+      "likes": 0,
+      "status": "visible",
+      "id": "id_1791835827919_b9e6bjh"
     }
   ],
   "authors": [
@@ -787,6 +813,20 @@
       "joinedAt": 1791679873320,
       "joinedDate": "2026-10-11T00:51:13.320Z",
       "id": "id_1791679873320_dpsa27w"
+    },
+    {
+      "name": "Test Student",
+      "visitorKey": "vis-python",
+      "joinedAt": 1791835827941,
+      "joinedDate": "2026-10-12T20:10:27.941Z",
+      "id": "id_1791835827941_nk20hnh"
+    },
+    {
+      "name": "Emeka Okonkwo",
+      "visitorKey": "vis-emeka-123",
+      "joinedAt": 1791836246469,
+      "joinedDate": "2026-10-12T20:17:26.469Z",
+      "id": "id_1791836246469_cn6mt0q"
     }
   ],
   "newsletter": [
@@ -810,6 +850,13 @@
       "name": "Uchenna",
       "joinedAt": 1787866000000,
       "status": "active"
+    },
+    {
+      "email": "student@funai.edu.ng",
+      "name": "Emeka",
+      "joinedAt": 1791836246472,
+      "status": "active",
+      "id": "id_1791836246472_mx5x1pa"
     }
   ],
   "categories": [
@@ -854,7 +901,30 @@
       "createdAt": 1787860000000
     }
   ],
-  "submissions": [],
+  "submissions": [
+    {
+      "title": "",
+      "text": "Hot gist from campus",
+      "name": "Anonymous",
+      "anonymous": true,
+      "style": "hot",
+      "image": "",
+      "status": "pending",
+      "time": "Just now",
+      "id": "id_1791835827937_h274at9"
+    },
+    {
+      "title": "",
+      "text": "A student lost an ID card around Faculty of Science",
+      "name": "Anonymous",
+      "anonymous": true,
+      "style": "hot",
+      "image": "",
+      "status": "pending",
+      "time": "Just now",
+      "id": "id_1791836246467_m1w5v0n"
+    }
+  ],
   "adminActivity": [
     {
       "action": "Admin login",
@@ -987,6 +1057,36 @@
       "detail": "Successful newsroom unlock",
       "time": 1791679873316,
       "id": "id_1791679873316_3hebi9b"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1791835827924,
+      "id": "id_1791835827924_hezfxjy"
+    },
+    {
+      "action": "Created event",
+      "detail": "Matriculation Ceremony",
+      "time": 1791836246475,
+      "id": "id_1791836246475_a2jhxob"
+    },
+    {
+      "action": "Created author",
+      "detail": "Chiamaka N.",
+      "time": 1791836246482,
+      "id": "id_1791836246482_qxtqxe0"
+    },
+    {
+      "action": "Added formal member",
+      "detail": "Kelechi Obi",
+      "time": 1791836246496,
+      "id": "id_1791836246496_04ei3nf"
+    },
+    {
+      "action": "Deleted member",
+      "detail": "Kelechi Obi",
+      "time": 1791836246500,
+      "id": "id_1791836246500_p9tfa0w"
     }
   ],
   "branding": {
