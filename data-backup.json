@@ -464,6 +464,114 @@
       "published": true,
       "status": "published",
       "id": "id_1791835827926_k0hevix"
+    },
+    {
+      "title": "Community Gist",
+      "excerpt": "Hot gist from campus",
+      "body": "Hot gist from campus",
+      "category": "Gist",
+      "author": "Anonymous Community",
+      "time": "Just now",
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "image": "",
+      "gistStyle": "hot",
+      "published": true,
+      "featured": false,
+      "breaking": false,
+      "id": "id_1792259711023_d67da0t"
+    },
+    {
+      "title": "Test story from python",
+      "excerpt": "This is a test excerpt",
+      "body": "This is test body",
+      "category": "Campus News",
+      "author": "FSTV Desk",
+      "workflow": "published",
+      "token": "speaker6969",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792259934163,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": true,
+      "status": "published",
+      "id": "id_1792259934164_jzbyfz1"
+    },
+    {
+      "title": "Community Gist",
+      "excerpt": "A student lost an ID card around Faculty of Science",
+      "body": "A student lost an ID card around Faculty of Science",
+      "category": "Gist",
+      "author": "Anonymous Community",
+      "time": "Just now",
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "image": "",
+      "gistStyle": "hot",
+      "published": true,
+      "featured": false,
+      "breaking": false,
+      "id": "id_1792259957475_fllu2xz"
+    },
+    {
+      "title": "Story with token",
+      "excerpt": "Excerpt with token",
+      "body": "Body",
+      "category": "Campus News",
+      "author": "FSTV Desk",
+      "token": "001234f6-f73d-4312-986f-e2f73d6d73dd",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792260046435,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": false,
+      "status": "published",
+      "id": "id_1792260046435_abc26bs"
+    },
+    {
+      "title": "VC Inspects Modernized ICT Facility on FUNAI Campus",
+      "excerpt": "The Vice Chancellor led key administrative heads on a comprehensive assessment tour of the newly upgraded campus ICT hub today.",
+      "body": "The Vice Chancellor led key administrative heads on a comprehensive assessment tour of the newly upgraded campus ICT hub today.",
+      "category": "Campus News",
+      "author": "FSTV Desk",
+      "workflow": "published",
+      "token": "fstv-adm-1792260719955-9fce5263-4bd1-4990-9fec-64f7cbab69ad",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792260719963,
+      "likes": 1,
+      "comments": 2,
+      "views": 0,
+      "published": true,
+      "status": "published",
+      "id": "id_1792260719963_qewae4f"
+    },
+    {
+      "title": "Huge turnout at the engineering faculty quadrangle for the i...",
+      "excerpt": "Huge turnout at the engineering faculty quadrangle for the inter-departmental quiz championship! Spirits are high.",
+      "body": "Huge turnout at the engineering faculty quadrangle for the inter-departmental quiz championship! Spirits are high.",
+      "category": "Gist",
+      "author": "Anonymous Community",
+      "time": "Just now",
+      "createdAt": 1792260719972,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "image": "",
+      "gistStyle": "hot",
+      "published": true,
+      "featured": false,
+      "breaking": false,
+      "id": "id_1792260719972_mhn9ux7"
     }
   ],
   "polls": [
@@ -590,6 +698,26 @@
       "likes": 0,
       "status": "visible",
       "id": "id_1791835827919_b9e6bjh"
+    },
+    {
+      "postId": "id_1792260719963_qewae4f",
+      "name": "Chidera E.",
+      "text": "Great development for the university students!",
+      "time": "Just now",
+      "createdAt": 1792260719976,
+      "likes": 0,
+      "status": "visible",
+      "id": "id_1792260719976_06xy121"
+    },
+    {
+      "postId": "id_1792260719963_qewae4f",
+      "name": "FUNAI Student",
+      "text": "Hoping the Wi-Fi reaches the hostel annex as well.",
+      "time": "Just now",
+      "createdAt": 1792260719978,
+      "likes": 0,
+      "status": "visible",
+      "id": "id_1792260719978_1maili1"
     }
   ],
   "authors": [
@@ -827,6 +955,13 @@
       "joinedAt": 1791836246469,
       "joinedDate": "2026-10-12T20:17:26.469Z",
       "id": "id_1791836246469_cn6mt0q"
+    },
+    {
+      "name": "Amarachi Okoro",
+      "visitorKey": "v-amarachi-1",
+      "joinedAt": 1792260719985,
+      "joinedDate": "2026-10-17T18:11:59.985Z",
+      "id": "id_1792260719985_17k14wx"
     }
   ],
   "newsletter": [
@@ -909,9 +1044,10 @@
       "anonymous": true,
       "style": "hot",
       "image": "",
-      "status": "pending",
+      "status": "approved",
       "time": "Just now",
-      "id": "id_1791835827937_h274at9"
+      "id": "id_1791835827937_h274at9",
+      "publishedPostId": "id_1792259711023_d67da0t"
     },
     {
       "title": "",
@@ -920,9 +1056,24 @@
       "anonymous": true,
       "style": "hot",
       "image": "",
-      "status": "pending",
+      "status": "approved",
       "time": "Just now",
-      "id": "id_1791836246467_m1w5v0n"
+      "id": "id_1791836246467_m1w5v0n",
+      "publishedPostId": "id_1792259957475_fllu2xz"
+    },
+    {
+      "id": "gist_1792260719966_xnd51g",
+      "title": "Huge turnout at the engineering faculty quadrangle for the i...",
+      "text": "Huge turnout at the engineering faculty quadrangle for the inter-departmental quiz championship! Spirits are high.",
+      "name": "Anonymous Student",
+      "anonymous": true,
+      "style": "hot",
+      "image": "",
+      "status": "approved",
+      "time": "Just now",
+      "createdAt": 1792260719966,
+      "publishedPostId": "id_1792260719972_mhn9ux7",
+      "updatedAt": 1792260719972
     }
   ],
   "adminActivity": [
@@ -1087,6 +1238,56 @@
       "detail": "Kelechi Obi",
       "time": 1791836246500,
       "id": "id_1791836246500_p9tfa0w"
+    },
+    {
+      "action": "Approved gist",
+      "detail": "Community gist",
+      "time": 1792259711026,
+      "id": "id_1792259711026_76s3nrx"
+    },
+    {
+      "action": "Approved gist",
+      "detail": "Community gist",
+      "time": 1792259957475,
+      "id": "id_1792259957475_aqhkobn"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792260046429,
+      "id": "id_1792260046429_1jdlj2h"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792260703269,
+      "id": "id_1792260703269_jso3cf3"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792260719956,
+      "id": "id_1792260719956_e0plz8g"
+    },
+    {
+      "action": "Published story",
+      "detail": "VC Inspects Modernized ICT Facility on FUNAI Campus",
+      "time": 1792260719963,
+      "id": "id_1792260719963_kbe55jo"
+    },
+    {
+      "action": "Approved gist",
+      "detail": "Huge turnout at the engineering faculty quadrangle for the i...",
+      "time": 1792260719973,
+      "id": "id_1792260719973_z5cnph5"
+    }
+  ],
+  "adminSessions": [
+    {
+      "token": "fstv-adm-1792260719955-9fce5263-4bd1-4990-9fec-64f7cbab69ad",
+      "createdAt": 1792260719956,
+      "expiresAt": 1794852719956,
+      "id": "id_1792260719956_wxgpk4z"
     }
   ],
   "branding": {

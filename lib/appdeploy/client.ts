@@ -17,6 +17,25 @@ function defaultHeaders(): Record<string, string> {
   return token ? { 'x-admin-token': token, 'Authorization': `Bearer ${token}` } : {};
 }
 
+function parseErrorMessage(data: any, status: number): string {
+  if (typeof data === 'string' && data.trim()) return data.trim();
+  if (data && typeof data === 'object') {
+    if (typeof data.error === 'string' && data.error.trim()) return data.error.trim();
+    if (typeof data.message === 'string' && data.message.trim()) return data.message.trim();
+    if (data.error && typeof data.error === 'object') {
+      if (typeof data.error.message === 'string' && data.error.message.trim()) return data.error.message.trim();
+      if (typeof data.error.detail === 'string' && data.error.detail.trim()) return data.error.detail.trim();
+    }
+    if (data.message && typeof data.message === 'object') {
+      if (typeof data.message.message === 'string' && data.message.message.trim()) return data.message.message.trim();
+    }
+  }
+  if (status === 401 || status === 403) return 'Admin access required. Please sign in again.';
+  if (status === 404) return 'Requested item was not found.';
+  if (status === 413) return 'Upload size too large. Please choose a smaller photo.';
+  return `Request failed with status ${status}`;
+}
+
 export const api = {
   get: async (url: string, config?: Record<string, any>) => {
     let fullUrl = url;
@@ -37,7 +56,7 @@ export const api = {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
+      throw new Error(parseErrorMessage(data, res.status));
     }
     return { data, status: res.status, ok: res.ok };
   },
@@ -55,7 +74,7 @@ export const api = {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
+      throw new Error(parseErrorMessage(data, res.status));
     }
     return { data, status: res.status, ok: res.ok };
   },
@@ -73,7 +92,7 @@ export const api = {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
+      throw new Error(parseErrorMessage(data, res.status));
     }
     return { data, status: res.status, ok: res.ok };
   },
@@ -106,7 +125,7 @@ export const api = {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.error || data.message || `Request failed with status ${res.status}`);
+      throw new Error(parseErrorMessage(data, res.status));
     }
     return { data, status: res.status, ok: res.ok };
   },

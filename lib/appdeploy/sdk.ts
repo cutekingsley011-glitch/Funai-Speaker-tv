@@ -35,7 +35,7 @@ class MemoryDatabase {
       if (!data || !Array.isArray(data.posts) || data.posts.length === 0) {
         data = staticBackupData;
       }
-      const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity'];
+      const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity', 'adminSessions'];
       for (const col of collections) {
         if (Array.isArray(data[col])) {
           const table = this.getTable(col);
@@ -57,7 +57,7 @@ class MemoryDatabase {
 
   private persist() {
     try {
-      const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity'];
+      const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity', 'adminSessions'];
       const backup: Record<string, any> = {};
       for (const col of collections) {
         backup[col] = Array.from(this.getTable(col).values());

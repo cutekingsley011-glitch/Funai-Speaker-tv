@@ -8,8 +8,119 @@ export default function AdminDashboard({back,toast,logout}:Props){const token=lo
  async function load(){setLoading(true);try{const r=await api.get(`/api/admin/dashboard?token=${encodeURIComponent(token)}`);const x=r.data||{};setD(x.stats||{});if(Array.isArray(x.submissions))setSubs(x.submissions);if(Array.isArray(x.comments))setComments(x.comments);if(Array.isArray(x.posts)&&x.posts.length)setPosts(x.posts);if(Array.isArray(x.polls)&&x.polls.length)setPolls(x.polls);if(Array.isArray(x.authors)&&x.authors.length)setAuthors(x.authors);if(Array.isArray(x.newsletter))setNewsletter(x.newsletter);if(Array.isArray(x.members)&&x.members.length)setMembers(x.members);if(Array.isArray(x.events)&&x.events.length)setEvents(x.events);if(Array.isArray(x.categories)&&x.categories.length)setCategories(x.categories);if(Array.isArray(x.activities))setActivities(x.activities)}catch{const clean=token.trim().toLowerCase();if(['speaker6969','2026','admin'].includes(clean)){/* stay logged in in offline mode */}else{try{const v=await api.get(`/api/admin/verify?token=${encodeURIComponent(token)}`);if(v.data?.isAdmin)return;}catch{}toast('Could not connect to live newsroom service');}}finally{setLoading(false)}}useEffect(()=>{load()},[]);useEffect(()=>{if(tab!=='members')return;const timer=window.setInterval(()=>{load()},10000);return()=>window.clearInterval(timer)},[tab]);
  const filtered=useMemo(()=>posts.filter(p=>`${p.title} ${p.excerpt} ${p.category} ${p.author}`.toLowerCase().includes(query.toLowerCase())),[posts,query]);const totalViews=posts.reduce((n,p)=>n+(p.views||0),0);const totalLikes=posts.reduce((n,p)=>n+(p.likes||0),0);const published=posts.filter(p=>(p.status||'published')==='published').length;const drafts=posts.filter(p=>p.status==='draft').length;const reviews=posts.filter(p=>p.status==='review').length;
  async function upload(e:any){const f=e.target.files?.[0];if(!f)return;toast('Compressing and uploading image...');let dataUrl='';try{dataUrl=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const maxDim=1200;let w=img.width,h=img.height;if(w>maxDim||h>maxDim){if(w>h){h=Math.round((h*maxDim)/w);w=maxDim}else{w=Math.round((w*maxDim)/h);h=maxDim}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx)return resolve(String(reader.result));ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',0.82))};img.onerror=()=>resolve(String(reader.result));img.src=String(reader.result)};reader.onerror=reject;reader.readAsDataURL(f)});const parts=dataUrl.split(',');const r=await api.post('/api/upload',{filename:f.name.replace(/\.[^/.]+$/,'')+'.jpg',contentType:'image/jpeg',data:parts[1],token});setForm((v:any)=>({...v,image:r.data.url||dataUrl,imagePath:r.data.path||''}));toast('Cover image uploaded & optimized')}catch{setForm((v:any)=>({...v,image:dataUrl}));toast('Image attached and optimized')}}
- async function saveStory(){if(!form.title.trim()||!form.excerpt.trim())return toast('Headline and excerpt are required');try{if(editingId){await api.put(`/api/admin/posts/${editingId}`,{...form,token});toast('Story updated successfully')}else{await api.post('/api/admin/posts',{...form,token});toast(form.workflow==='published'?'Story published successfully':'Story saved successfully')}setEditingId(null);setForm({title:'',excerpt:'',body:'',category:'Campus News',author:'FSTV Desk',featured:false,breaking:false,workflow:'published',scheduledAt:'',image:''});await load();setTab('stories')}catch(err:any){toast(err?.message||(editingId?'Could not update story':'Could not save story'))}}async function editStory(p:Story){setEditingId(p.id);setForm({title:p.title||'',excerpt:p.excerpt||'',body:p.body||'',category:p.category||'Campus News',author:p.author||'FSTV Desk',featured:!!p.featured,breaking:!!p.breaking,workflow:p.status==='draft'?'draft':p.status==='review'?'review':p.status==='scheduled'?'scheduled':'published',scheduledAt:p.scheduledAt?new Date(Number(p.scheduledAt)).toISOString().slice(0,16):'',image:p.image||'',imagePath:(p as any).imagePath||''});setOpenMenu(null);setTab('create')}async function deleteStory(id:string){if(!window.confirm('Delete this story permanently? This cannot be undone.'))return;try{await api.delete(`/api/admin/posts/${id}?token=${encodeURIComponent(token)}`);toast('Story deleted');setOpenMenu(null);await load()}catch{toast('Could not delete story')}}
- async function createPoll(q:string,o:string[]){ if(!q.trim()||o.filter(Boolean).length<2)return toast('Add a question and at least two options');try{await api.post('/api/admin/polls',{question:q.trim(),options:o.filter(Boolean),active:true,token});toast('Poll created');await load()}catch{toast('Could not create poll')}}async function togglePoll(id:string,active:boolean){try{await api.put(`/api/admin/polls/${id}`,{active,token});toast(active?'Poll activated':'Poll closed');await load()}catch{toast('Could not update poll')}}async function removePoll(id:string){if(!window.confirm('Delete this poll permanently?'))return;try{await api.delete(`/api/admin/polls/${id}`,{token});toast('Poll deleted');await load()}catch{toast('Could not delete poll')}}async function moderate(id:string,status:string){try{await api.put(`/api/admin/submissions/${id}`,{status,token});toast(status==='approved'?'Gist approved':'Gist rejected');load()}catch{toast('Moderation failed')}}async function removeComment(id:string){try{await api.delete(`/api/admin/comments/${id}`,{token});toast('Comment removed');load()}catch{toast('Could not remove comment')}}async function createAuthor(){if(!author.name.trim())return toast('Author name is required');try{await api.post('/api/admin/authors',{...author,token});toast('Author profile created');setAuthor({name:'',bio:''});load()}catch{toast('Author creation failed')}}
+  async function saveStory(){
+    const title = form.title.trim();
+    if(!title) return toast('Story headline is required');
+    const bodyText = (form.body || '').trim();
+    const excerpt = (form.excerpt || '').trim() || (bodyText ? bodyText.slice(0, 180) + (bodyText.length > 180 ? '...' : '') : title);
+    const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+    const payload = {
+      ...form,
+      title,
+      excerpt,
+      body: bodyText,
+      token: activeToken
+    };
+    try{
+      if(editingId){
+        await api.put(`/api/admin/posts/${editingId}`, payload);
+        toast('Story updated successfully');
+      }else{
+        await api.post('/api/admin/posts', payload);
+        toast(form.workflow==='published'?'Story published successfully!':'Story saved successfully');
+      }
+      setEditingId(null);
+      setForm({title:'',excerpt:'',body:'',category:'Campus News',author:'FSTV Desk',featured:false,breaking:false,workflow:'published',scheduledAt:'',image:'',imagePath:''});
+      await load();
+      setTab('stories');
+    }catch(err:any){
+      const msg = typeof err === 'string' ? err : (err?.message || (editingId?'Could not update story':'Could not save story'));
+      toast(msg);
+    }
+  }
+  async function editStory(p:Story){
+    setEditingId(p.id);
+    setForm({title:p.title||'',excerpt:p.excerpt||'',body:p.body||'',category:p.category||'Campus News',author:p.author||'FSTV Desk',featured:!!p.featured,breaking:!!p.breaking,workflow:p.status==='draft'?'draft':p.status==='review'?'review':p.status==='scheduled'?'scheduled':'published',scheduledAt:p.scheduledAt?new Date(Number(p.scheduledAt)).toISOString().slice(0,16):'',image:p.image||'',imagePath:(p as any).imagePath||''});
+    setOpenMenu(null);
+    setTab('create');
+  }
+  async function deleteStory(id:string){
+    if(!window.confirm('Delete this story permanently? This cannot be undone.'))return;
+    try{
+      const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+      await api.delete(`/api/admin/posts/${id}?token=${encodeURIComponent(activeToken)}`);
+      toast('Story deleted');
+      setOpenMenu(null);
+      await load();
+    }catch(err:any){
+      toast(err?.message || 'Could not delete story');
+    }
+  }
+  async function createPoll(q:string,o:string[]){
+    if(!q.trim()||o.filter(Boolean).length<2)return toast('Add a question and at least two options');
+    try{
+      const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+      await api.post('/api/admin/polls',{question:q.trim(),options:o.filter(Boolean),active:true,token:activeToken});
+      toast('Poll created');
+      await load();
+    }catch(err:any){
+      toast(err?.message || 'Could not create poll');
+    }
+  }
+  async function togglePoll(id:string,active:boolean){
+    try{
+      const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+      await api.put(`/api/admin/polls/${id}`,{active,token:activeToken});
+      toast(active?'Poll activated':'Poll closed');
+      await load();
+    }catch(err:any){
+      toast(err?.message || 'Could not update poll');
+    }
+  }
+  async function removePoll(id:string){
+    if(!window.confirm('Delete this poll permanently?'))return;
+    try{
+      const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+      await api.delete(`/api/admin/polls/${id}`,{token:activeToken});
+      toast('Poll deleted');
+      await load();
+    }catch(err:any){
+      toast(err?.message || 'Could not delete poll');
+    }
+  }
+  async function moderate(id:string,status:string){
+    try{
+      const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+      await api.put(`/api/admin/submissions/${id}`,{status,token:activeToken});
+      toast(status==='approved'?'Gist approved and published to newsroom!':'Gist rejected');
+      await load();
+    }catch(err:any){
+      const msg = typeof err === 'string' ? err : (err?.message || (status === 'approved' ? 'Could not approve gist' : 'Could not reject gist'));
+      toast(msg);
+    }
+  }
+  async function removeComment(id:string){
+    try{
+      const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+      await api.delete(`/api/admin/comments/${id}`,{token:activeToken});
+      toast('Comment removed');
+      await load();
+    }catch(err:any){
+      toast(err?.message || 'Could not remove comment');
+    }
+  }
+  async function createAuthor(){
+    if(!author.name.trim())return toast('Author name is required');
+    try{
+      const activeToken = token || localStorage.getItem('fstv-admin-token') || '';
+      await api.post('/api/admin/authors',{...author,token:activeToken});
+      toast('Author profile created');
+      setAuthor({name:'',bio:''});
+      await load();
+    }catch(err:any){
+      toast(err?.message || 'Author creation failed');
+    }
+  }
  function go(t:string){setTab(t);setMobile(false);setOpenMenu(null)}
  return <div className="admin-app"><aside className={mobile?'admin-sidebar open':'admin-sidebar'}><div className="admin-brand"><SiteLogo className="admin-logo"/><div><b>FUNAI SPEAKER TV</b><span>NEWSROOM</span></div><button className="admin-close" onClick={()=>setMobile(false)}><X/></button></div><div className="admin-nav-label">WORKSPACE</div><nav>{nav.map(([id,label,Icon])=><button key={id} className={tab===id?'admin-nav active':'admin-nav'} onClick={()=>go(id)}><Icon size={18}/><span>{label}</span>{id==='submissions'&&subs.length>0&&<em>{subs.length}</em>}</button>)}</nav><div className="admin-side-bottom"><button className="admin-nav" onClick={back}><ChevronLeft size={18}/><span>View Website</span></button><button className="admin-nav danger" onClick={logout}><LogOut size={18}/><span>Sign out</span></button></div></aside><div className="admin-main"><header className="admin-topbar"><button className="admin-mobile-menu" onClick={()=>setMobile(true)}><Menu/></button><div><span className="admin-breadcrumb">NEWSROOM / {nav.find(n=>n[0]===tab)?.[1]?.toUpperCase()}</span><h1>{tab==='overview'?'Good evening, Editor.':tab==='create'?'Create a new story':nav.find(n=>n[0]===tab)?.[1]}</h1></div><div className="admin-top-actions"><button onClick={load} title="Refresh"><RefreshCw size={18}/></button><div className="admin-user"><SiteLogo className="admin-avatar"/><div><b>FSTV Admin</b><span>Administrator</span></div></div></div></header><main className="admin-content-area">{loading&&<div className="admin-loading"><div className="admin-spinner"/>Loading newsroom data...</div>}{!loading&&tab==='overview'&&<Overview d={d} posts={posts} published={published} drafts={drafts} reviews={reviews} totalViews={totalViews} totalLikes={totalLikes} go={go}/>} {!loading&&tab==='stories'&&<Stories posts={filtered} query={query} setQuery={setQuery} go={go} openMenu={openMenu} setOpenMenu={setOpenMenu} edit={editStory} remove={deleteStory}/>} {!loading&&tab==='create'&&<Editor form={form} setForm={setForm} upload={upload} save={saveStory} editing={!!editingId}/>} {!loading&&tab==='submissions'&&<Submissions data={subs} moderate={moderate}/>} {!loading&&tab==='comments'&&<Comments data={comments} remove={removeComment}/>} {!loading&&tab==='polls'&&<PollsAdmin polls={polls} create={createPoll} toggle={togglePoll} remove={removePoll}/>} {!loading&&tab==='authors'&&<Authors authors={authors} author={author} setAuthor={setAuthor} create={createAuthor}/>} {!loading&&tab==='newsletter'&&<Newsletter data={newsletter}/>} {!loading&&tab==='analytics'&&<Analytics posts={posts} totalViews={totalViews} totalLikes={totalLikes}/>} {!loading&&tab==='events'&&<EventsAdmin events={events} onReload={load}/>} {!loading&&tab==='members'&&<MembersAdmin members={members} onReload={load}/>} {!loading&&tab==='categories'&&<CategoriesAdmin categories={categories} onReload={load}/>} {!loading&&tab==='activity'&&<ActivityAdmin activities={activities}/>} {!loading&&tab==='backup'&&<BackupAdmin data={{posts,comments,polls,events,authors,members,newsletter,categories,activities}}/>} {!loading&&tab==='branding'&&<BrandingAdmin/>} {!loading&&tab==='settings'&&<SettingsPanel logout={logout}/>}</main></div></div>}
 function Overview({d,posts,published,drafts,reviews,totalViews,totalLikes,go}:{d:any;posts:Story[];published:number;drafts:number;reviews:number;totalViews:number;totalLikes:number;go:(x:string)=>void}){const stats=[['Published stories',published,BookOpen],['Under review',reviews,Clock],['Drafts',drafts,FileText],['Total views',totalViews,TrendingUp],['Total likes',totalLikes,BarChart3],['Subscribers',Array.isArray(d.newsletter)?d.newsletter.length:(d.newsletter||0),Mail]] as const;return <div className="admin-dashboard"><section className="admin-welcome"><div><span className="admin-eyebrow"><Zap size={14}/> NEWSROOM CONTROL CENTER</span><h2>Everything happening at<br/><em>FUNAI SPEAKER TV.</em></h2><p>Publish, moderate and monitor your campus media operation from one place.</p></div><button className="admin-primary" onClick={()=>go('create')}><Plus/> Create Story</button></section><div className="admin-stat-grid">{stats.map(([label,value,Icon])=><div className="admin-stat" key={label}><div className="admin-stat-icon"><Icon size={19}/></div><b>{value}</b><span>{label}</span></div>)}</div><div className="admin-two-col"><section className="admin-panel"><div className="panel-head"><div><span className="admin-eyebrow">CONTENT</span><h3>Recent stories</h3></div><button onClick={()=>go('stories')}>View all <ChevronLeft className="flip" size={15}/></button></div>{posts.length?<div className="story-list">{posts.slice(0,5).map(p=><div className="story-item" key={p.id}><div className="story-thumb">{p.image?<img src={p.image}/>:<FileText size={20}/>}</div><div className="story-info"><b>{p.title}</b><span>{p.category} · {p.author}</span></div><Status status={p.status||'published'}/><span className="story-views">{p.views||0} views</span></div>)}</div>:<Empty icon={BookOpen} title="Your newsroom is quiet" text="Create your first story to start publishing." action="Create Story" onClick={()=>go('create')}/>}</section><section className="admin-panel"><div className="panel-head"><div><span className="admin-eyebrow">MODERATION</span><h3>Needs attention</h3></div></div>{reviews>0?<div className="attention"><div><Clock/><b>{reviews} stories waiting for review</b><span>Editorial queue</span></div><button onClick={()=>go('stories')}>Review</button></div>:Number(d.submissions||0)>0?<div className="attention"><div><Send/><b>{d.submissions} gist submissions</b><span>Waiting in inbox</span></div><button onClick={()=>go('submissions')}>Open inbox</button></div>:<Empty icon={Check} title="All caught up" text="Nothing needs your attention right now."/>}</section></div><section className="admin-quick"><button onClick={()=>go('create')}><PenLine/><span><b>Write a story</b><small>Open the editorial workspace</small></span><Plus/></button><button onClick={()=>go('submissions')}><Send/><span><b>Moderate gist</b><small>Review community submissions</small></span><ChevronLeft className="flip"/></button><button onClick={()=>go('analytics')}><BarChart3/><span><b>View analytics</b><small>See what readers engage with</small></span><ChevronLeft className="flip"/></button></section></div>}
