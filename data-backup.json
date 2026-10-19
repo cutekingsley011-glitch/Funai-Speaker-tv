@@ -572,6 +572,147 @@
       "featured": false,
       "breaking": false,
       "id": "id_1792260719972_mhn9ux7"
+    },
+    {
+      "title": "Test story",
+      "body": "Body",
+      "token": "fstv-adm-1792260719955-test",
+      "excerpt": "Body",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792411980256,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": false,
+      "status": "published",
+      "id": "id_1792411980256_hnbr50a"
+    },
+    {
+      "title": "Test story",
+      "body": "Body",
+      "token": "Speaker6969",
+      "excerpt": "Body",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792411980259,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": false,
+      "status": "published",
+      "id": "id_1792411980259_1cs2avx"
+    },
+    {
+      "title": "Test Story Headline",
+      "excerpt": "Test Excerpt",
+      "body": "Test Body Content",
+      "category": "Campus News",
+      "author": "FSTV Desk",
+      "workflow": "published",
+      "token": "fstv-adm-1792412082341-87157bf3-3e47-47b4-b76a-0d9cc0b362b4",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792412082346,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": true,
+      "status": "published",
+      "id": "id_1792412082346_t1nm7hw"
+    },
+    {
+      "title": "Test Story Headline 2",
+      "excerpt": "Test Excerpt",
+      "body": "Test Body Content",
+      "category": "Campus News",
+      "author": "FSTV Desk",
+      "workflow": "published",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792412082350,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": true,
+      "status": "published",
+      "id": "id_1792412082350_1dz1uj5"
+    },
+    {
+      "title": "This is a hot campus gist about the upcoming exams and event...",
+      "excerpt": "This is a hot campus gist about the upcoming exams and events!",
+      "body": "This is a hot campus gist about the upcoming exams and events!",
+      "category": "Gist",
+      "author": "Anonymous Community",
+      "time": "Just now",
+      "createdAt": 1792412087132,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "image": "",
+      "gistStyle": "hot",
+      "published": true,
+      "featured": false,
+      "breaking": false,
+      "id": "id_1792412087132_0hoxozt"
+    },
+    {
+      "title": "Big announcement from student affairs about hostel allocatio...",
+      "excerpt": "Big announcement from student affairs about hostel allocations!",
+      "body": "Big announcement from student affairs about hostel allocations!",
+      "category": "Gist",
+      "author": "Anonymous Community",
+      "time": "Just now",
+      "createdAt": 1792412679356,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "image": "",
+      "gistStyle": "hot",
+      "published": true,
+      "featured": false,
+      "breaking": false,
+      "id": "id_1792412679356_b030l2r"
+    },
+    {
+      "body": "Urgent notice regarding the main library power maintenance today.",
+      "category": "Campus News",
+      "author": "FSTV Desk",
+      "title": "Urgent notice regarding the main library power maintenance today.",
+      "excerpt": "Urgent notice regarding the main library power maintenance today.",
+      "image": "",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792412679364,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": true,
+      "status": "published",
+      "id": "id_1792412679364_jmhbmjj"
+    },
+    {
+      "title": "The English in the site is at the high level even terms and names of c",
+      "excerpt": "Youngboy set to go back",
+      "body": "The English in the site is at the high level even terms and names of clothing please make it in a way an average man Nigerian and person can understand both caption naming everything at all in the site",
+      "category": "Campus News",
+      "author": "FSTV Desk",
+      "featured": false,
+      "breaking": false,
+      "image": "/uploads/1792412818138-IMG_2650.jpg",
+      "imagePath": "uploads/1792412818138-IMG_2650.jpg",
+      "time": "Just now",
+      "createdAt": 1792412820634,
+      "likes": 0,
+      "comments": 0,
+      "views": 1,
+      "published": true,
+      "status": "published",
+      "id": "id_1792412820634_msil4yc"
     }
   ],
   "polls": [
@@ -718,6 +859,16 @@
       "likes": 0,
       "status": "visible",
       "id": "id_1792260719978_1maili1"
+    },
+    {
+      "postId": "test-id",
+      "name": "Student",
+      "text": "Testing comment without token",
+      "time": "Just now",
+      "createdAt": 1792411980245,
+      "likes": 0,
+      "status": "visible",
+      "id": "id_1792411980245_xr6agvy"
     }
   ],
   "authors": [
@@ -1074,6 +1225,46 @@
       "createdAt": 1792260719966,
       "publishedPostId": "id_1792260719972_mhn9ux7",
       "updatedAt": 1792260719972
+    },
+    {
+      "id": "gist_1792411980237_vdkzyi",
+      "title": "Testing submission without token",
+      "text": "Testing submission without token",
+      "name": "Student",
+      "anonymous": true,
+      "style": "hot",
+      "image": "",
+      "status": "pending",
+      "time": "Just now",
+      "createdAt": 1792411980238
+    },
+    {
+      "id": "gist_1792412087128_ct2stg",
+      "title": "This is a hot campus gist about the upcoming exams and event...",
+      "text": "This is a hot campus gist about the upcoming exams and events!",
+      "name": "Student Observer",
+      "anonymous": true,
+      "style": "hot",
+      "image": "",
+      "status": "approved",
+      "time": "Just now",
+      "createdAt": 1792412087128,
+      "publishedPostId": "id_1792412087132_0hoxozt",
+      "updatedAt": 1792412087132
+    },
+    {
+      "id": "gist_1792412679350_b0gtg3",
+      "title": "Big announcement from student affairs about hostel allocatio...",
+      "text": "Big announcement from student affairs about hostel allocations!",
+      "name": "Campus Resident",
+      "anonymous": true,
+      "style": "hot",
+      "image": "",
+      "status": "approved",
+      "time": "Just now",
+      "createdAt": 1792412679350,
+      "publishedPostId": "id_1792412679356_b030l2r",
+      "updatedAt": 1792412679356
     }
   ],
   "adminActivity": [
@@ -1280,6 +1471,120 @@
       "detail": "Huge turnout at the engineering faculty quadrangle for the i...",
       "time": 1792260719973,
       "id": "id_1792260719973_z5cnph5"
+    },
+    {
+      "action": "Published story",
+      "detail": "Test story",
+      "time": 1792411980256,
+      "id": "id_1792411980256_jki3e9t"
+    },
+    {
+      "action": "Published story",
+      "detail": "Test story",
+      "time": 1792411980259,
+      "id": "id_1792411980259_n7sgbuy"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792412082342,
+      "id": "id_1792412082342_d4qjdvx"
+    },
+    {
+      "action": "Published story",
+      "detail": "Test Story Headline",
+      "time": 1792412082346,
+      "id": "id_1792412082346_rzrr5jc"
+    },
+    {
+      "action": "Published story",
+      "detail": "Test Story Headline 2",
+      "time": 1792412082351,
+      "id": "id_1792412082351_y52o7wm"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792412087125,
+      "id": "id_1792412087125_g0ozopw"
+    },
+    {
+      "action": "Approved gist",
+      "detail": "This is a hot campus gist about the upcoming exams and event...",
+      "time": 1792412087132,
+      "id": "id_1792412087132_mpzh9nc"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792412417827,
+      "id": "id_1792412417827_msnpt39"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792412417830,
+      "id": "id_1792412417831_npdirc4"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792412417834,
+      "id": "id_1792412417834_amly68v"
+    },
+    {
+      "action": "Admin login",
+      "detail": "Successful newsroom unlock",
+      "time": 1792412417837,
+      "id": "id_1792412417837_azzc60w"
+    },
+    {
+      "action": "Failed admin login",
+      "detail": "Incorrect password attempt",
+      "time": 1792412417839,
+      "id": "id_1792412417839_pzaq7mf"
+    },
+    {
+      "action": "Failed admin login",
+      "detail": "Incorrect password attempt",
+      "time": 1792412417842,
+      "id": "id_1792412417842_l25gotk"
+    },
+    {
+      "action": "Approved gist",
+      "detail": "Big announcement from student affairs about hostel allocatio...",
+      "time": 1792412679357,
+      "id": "id_1792412679357_gc68n22"
+    },
+    {
+      "action": "Published story",
+      "detail": "Campus Life 2026: Semester Kickoff",
+      "time": 1792412679361,
+      "id": "id_1792412679361_2wy6gqz"
+    },
+    {
+      "action": "Published story",
+      "detail": "Urgent notice regarding the main library power maintenance today.",
+      "time": 1792412679364,
+      "id": "id_1792412679365_vemjio7"
+    },
+    {
+      "action": "Published story",
+      "detail": "The English in the site is at the high level even terms and names of c",
+      "time": 1792412820634,
+      "id": "id_1792412820634_itaqmwy"
+    },
+    {
+      "action": "Published story",
+      "detail": "BRAND NEW TOP STORY: Campus Senate Meeting Today",
+      "time": 1792413277382,
+      "id": "id_1792413277382_dskwo91"
+    },
+    {
+      "action": "Deleted story",
+      "detail": "BRAND NEW TOP STORY: Campus Senate Meeting Today",
+      "time": 1792413277414,
+      "id": "id_1792413277414_y3fwlg8"
     }
   ],
   "adminSessions": [
@@ -1288,6 +1593,42 @@
       "createdAt": 1792260719956,
       "expiresAt": 1794852719956,
       "id": "id_1792260719956_wxgpk4z"
+    },
+    {
+      "token": "fstv-adm-1792412082341-87157bf3-3e47-47b4-b76a-0d9cc0b362b4",
+      "createdAt": 1792412082341,
+      "expiresAt": 1795004082341,
+      "id": "id_1792412082341_56edrsk"
+    },
+    {
+      "token": "fstv-adm-1792412087124-12ea71b8-5985-4790-920f-572998f8f7f8",
+      "createdAt": 1792412087124,
+      "expiresAt": 1795004087124,
+      "id": "id_1792412087124_3cqw316"
+    },
+    {
+      "token": "fstv-adm-1792412417826-42a5b459-27d1-410b-b7d6-6cf585fd73d7",
+      "createdAt": 1792412417826,
+      "expiresAt": 1795004417826,
+      "id": "id_1792412417826_4ijwpl1"
+    },
+    {
+      "token": "fstv-adm-1792412417830-8ed98c28-c88c-4ed6-a50e-cc0e084fe83e",
+      "createdAt": 1792412417830,
+      "expiresAt": 1795004417830,
+      "id": "id_1792412417830_susiw6t"
+    },
+    {
+      "token": "fstv-adm-1792412417834-81196aef-df4d-48ab-86e6-cc81ca7ccdb5",
+      "createdAt": 1792412417834,
+      "expiresAt": 1795004417834,
+      "id": "id_1792412417834_dq7wtgm"
+    },
+    {
+      "token": "fstv-adm-1792412417836-121b0118-2ee8-4d74-bdae-011fa8af0ec0",
+      "createdAt": 1792412417836,
+      "expiresAt": 1795004417836,
+      "id": "id_1792412417836_q64d8ki"
     }
   ],
   "branding": {
