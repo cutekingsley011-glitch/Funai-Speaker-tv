@@ -15,19 +15,27 @@ export default function App(){const rawPosts=((initialData as any)?.posts as Pos
  useEffect(()=>{load();verifyAdmin();if(!localStorage.getItem('fstv-member-name'))setModal('welcome');const t=window.setInterval(()=>{setPosts(x=>x.map(p=>({...p,time:relativeTime(p.createdAt,p.time)})));setComments(x=>Object.fromEntries(Object.entries(x).map(([id,items])=>[id,items.map(c=>({...c,time:relativeTime(c.createdAt,c.time)}))])) as Record<string,Comment[]>);},30000);return()=>window.clearInterval(t)},[]);
 
  useEffect(()=>{
-   const handleHash = () => {
+   const handleDeepLink = () => {
+     const searchParams = new URLSearchParams(window.location.search);
+     const queryStory = searchParams.get('story') || searchParams.get('id');
      const hash = window.location.hash;
+     let hashStory = '';
      if (hash && hash.includes('#story=')) {
-       const id = hash.split('#story=')[1]?.split('&')[0];
-       if (id && posts.length > 0) {
-         const found = posts.find(p => p.id === id);
-         if (found) setArticle(found);
-       }
+       hashStory = hash.split('#story=')[1]?.split('&')[0];
+     }
+     const storyId = queryStory || hashStory;
+     if (storyId && posts.length > 0) {
+       const found = posts.find(p => p.id === storyId);
+       if (found) setArticle(found);
      }
    };
-   handleHash();
-   window.addEventListener('hashchange', handleHash);
-   return () => window.removeEventListener('hashchange', handleHash);
+   handleDeepLink();
+   window.addEventListener('hashchange', handleDeepLink);
+   window.addEventListener('popstate', handleDeepLink);
+   return () => {
+     window.removeEventListener('hashchange', handleDeepLink);
+     window.removeEventListener('popstate', handleDeepLink);
+   };
  }, [posts]);
 
  useEffect(()=>{
@@ -89,7 +97,7 @@ function Nav(p:{icon:React.ReactNode;label:string;active:boolean;onClick:()=>voi
 function ProgressiveImage({src,alt='',className='',loading='lazy',onFallbackUrl}:{src:string;alt?:string;className?:string;loading?:'lazy'|'eager';onFallbackUrl?:()=>Promise<string|undefined>}){const[loaded,setLoaded]=useState(false);const[imgSrc,setImgSrc]=useState(src);useEffect(()=>{setImgSrc(src);setLoaded(false)},[src]);return <div className={`media-img-wrapper ${loaded?'is-loaded':'is-loading'}`}>{!loaded&&<div className="media-skeleton-loader"/>}<img src={imgSrc} alt="" aria-hidden="true" className="media-ambient-blur" loading="lazy" decoding="async"/><img src={imgSrc} alt={alt} loading={loading} decoding="async" className={`media-main-img ${className} ${loaded?'opacity-100':'opacity-0'}`} onLoad={()=>setLoaded(true)} onError={async e=>{const img=e.currentTarget;if(img.dataset.retried!=='1'){img.dataset.retried='1';if(onFallbackUrl){try{const fresh=await onFallbackUrl();if(fresh&&fresh!==imgSrc){setImgSrc(fresh);return}}catch{}}setImgSrc(src+(src.includes('?')?'&':'?')+'v='+Date.now())}else{setLoaded(true)}}}/></div>}
 function Card({p,liked,like,open,comments,expanded,show,draft,setDraft,add,rank,toast}:{p:Post;liked:boolean;like:()=>void;open:()=>void;comments:Comment[];expanded:boolean;show:()=>void;draft:string;setDraft:(v:string)=>void;add:()=>void;rank?:number;toast:(s:string)=>void}){
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/#story=${p.id}`;
+    const shareUrl = `${window.location.origin}/?story=${p.id}#story=${p.id}`;
     const siteUrl = `${window.location.origin}`;
     const text = `*${p.title}*\n\n${p.excerpt}\n\n📖 Read full story here:\n${shareUrl}\n\n🌐 Visit FUNAI SPEAKER TV:\n${siteUrl}`;
     if (navigator.share) {
@@ -114,7 +122,7 @@ function Card({p,liked,like,open,comments,expanded,show,draft,setDraft,add,rank,
   return <article className="post-card"><button className="post-image" onClick={open} aria-label={`Open ${p.title}`}>{p.image?<ProgressiveImage src={p.image} alt={p.title||""} loading="lazy"/>:<div className="post-art"><span>{p.category}</span><strong>{rank?`#${rank}`:'FSTV'}</strong><i>FUNAI SPEAKER TV</i></div>}</button><div className="post-body"><div className="post-meta-row"><span className="post-category">{p.category}</span><span className="post-time">{p.time}</span></div><button className="title-btn" onClick={open}><h3>{p.title}</h3></button><p className="post-excerpt">{p.excerpt}</p><div className="post-footer"><div className="post-byline"><span className="byline-avatar">{(p.author||'F')[0]}</span><span><b>{p.author||'FSTV Desk'}</b><small>{p.views||0} views</small></span></div><div className="post-actions"><button onClick={like} className={liked?'liked':''} aria-label="Like story"><Heart fill={liked?'currentColor':'none'}/> {p.likes}</button><button onClick={show} aria-label="Comments"><MessageCircle/> {p.comments}</button><button onClick={handleShare} aria-label="Share story"><Share2/> Share</button></div></div>{expanded&&<div className="comments">{comments.map(c=><div className="comment" key={c.id}><div className="avatar">{c.name[0]}</div><div><b>{c.name}</b><small>{relativeTime(c.createdAt,c.time)}</small><p>{c.text}</p><ThumbsUp size={13}/></div></div>)}{!comments.length&&<p className="empty">No comments yet.</p>}<div className="comment-box"><input value={draft} onChange={e=>setDraft(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')add()}} placeholder="Add a comment..."/><button onClick={add}><Send/></button></div></div>}</div></article>}
 function Article({p,liked,like,back,comments,openComments,expanded,draft,setDraft,add,toast}:{p:Post;liked:boolean;like:()=>void;back:()=>void;comments:Comment[];openComments:()=>void;expanded:boolean;draft:string;setDraft:(v:string)=>void;add:()=>void;toast:(s:string)=>void}){
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}/#story=${p.id}`;
+    const shareUrl = `${window.location.origin}/?story=${p.id}#story=${p.id}`;
     const siteUrl = `${window.location.origin}`;
     const text = `*${p.title}*\n\n${p.excerpt}\n\n📖 Read full story here:\n${shareUrl}\n\n🌐 Visit FUNAI SPEAKER TV:\n${siteUrl}`;
     if (navigator.share) {
