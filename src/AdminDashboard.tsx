@@ -1,13 +1,14 @@
+import {mergeAndFilterPosts,recordDeletedPost,saveCustomPost} from './postPersistence';
 import initialData from '../data-backup.json';
 import {useEffect,useMemo,useState} from 'react';import {api} from '@appdeploy/client';import PollsAdmin from './PollsAdmin';import {MembersAdmin,EventsAdmin,CategoriesAdmin,ActivityAdmin,BackupAdmin,BrandingAdmin} from './AdminExtensions';import {SiteLogo} from './StandardFeatures';import {BarChart3,Bell,BookOpen,Calendar,Check,ChevronLeft,Clock,Database,Edit3,FileText,FolderCog,ImagePlus,LayoutDashboard,LogOut,Mail,Menu,MessageSquare,MoreHorizontal,PenLine,Plus,RefreshCw,Search,Send,Settings,ShieldCheck,Trash2,TrendingUp,Upload,UserPlus,Users,X,Zap,Vote} from 'lucide-react';
 type Props={back:()=>void;toast:(s:string)=>void;logout:()=>void};
 type Story={id:string;title:string;excerpt:string;body?:string;category:string;author:string;time?:string;likes?:number;comments?:number;views?:number;image?:string;featured?:boolean;breaking?:boolean;status?:string;scheduledAt?:string|number;createdAt?:number};type Poll={id:string;question:string;options:{label:string;votes:number}[];active?:boolean};
 type Item={id:string;name?:string;email?:string;title?:string;text?:string;bio?:string;anonymous?:boolean;status?:string;time?:string;joinedAt?:number;description?:string;date?:string;location?:string};
 const nav=[['overview','Overview',LayoutDashboard],['stories','Newsroom',BookOpen],['create','Create Story',PenLine],['submissions','Gist Inbox',Send],['comments','Comments',MessageSquare],['polls','Polls & Voting',Vote],['events','Events',Calendar],['authors','Authors',Users],['categories','Categories',FolderCog],['members','Members',Users],['newsletter','Newsletter',Mail],['analytics','Analytics',BarChart3],['activity','Activity Log',Clock],['backup','Backup & Export',Database],['branding','Branding',ImagePlus],['settings','Settings',Settings]] as const;
-export default function AdminDashboard({back,toast,logout}:Props){const token=localStorage.getItem('fstv-admin-token')||'Speaker6969';const[tab,setTab]=useState<string>('overview');const[mobile,setMobile]=useState(false);const[d,setD]=useState<any>({});const b=initialData as any;const[posts,setPosts]=useState<Story[]>(()=>{const raw=b?.posts||[];return [...raw].sort((a:any,b:any)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));});const[deleteConfirm,setDeleteConfirm]=useState<Story|null>(null);const[previewStory,setPreviewStory]=useState<Story|null>(null);const[subs,setSubs]=useState<Item[]>(b?.submissions||[]);const[comments,setComments]=useState<Item[]>([]);const[polls,setPolls]=useState<Poll[]>(b?.polls||[]);const[authors,setAuthors]=useState<Item[]>(b?.authors||[]);const[newsletter,setNewsletter]=useState<Item[]>(b?.newsletter||[]);const[members,setMembers]=useState<Item[]>(b?.members||[]);const[events,setEvents]=useState<Item[]>(b?.events||[]);const[categories,setCategories]=useState<Item[]>(b?.categories||[]);const[activities,setActivities]=useState<Item[]>(b?.adminActivity||[]);const[query,setQuery]=useState('');const[form,setForm]=useState<any>({title:'',excerpt:'',body:'',category:'Campus News',author:'FSTV Desk',featured:false,breaking:false,workflow:'published',scheduledAt:'',image:''});const[author,setAuthor]=useState({name:'',bio:''});const[loading,setLoading]=useState(true);const[openMenu,setOpenMenu]=useState<string|null>(null);const[editingId,setEditingId]=useState<string|null>(null);
- async function load(){setLoading(true);try{const r=await api.get(`/api/admin/dashboard?token=${encodeURIComponent(token)}`);const x=r.data||{};setD(x.stats||{});if(Array.isArray(x.submissions))setSubs(x.submissions);if(Array.isArray(x.comments))setComments(x.comments);if(Array.isArray(x.posts)&&x.posts.length){const sp=[...x.posts].sort((a:any,b:any)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));setPosts(sp);}if(Array.isArray(x.polls)&&x.polls.length)setPolls(x.polls);if(Array.isArray(x.authors)&&x.authors.length)setAuthors(x.authors);if(Array.isArray(x.newsletter))setNewsletter(x.newsletter);if(Array.isArray(x.members)&&x.members.length)setMembers(x.members);if(Array.isArray(x.events)&&x.events.length)setEvents(x.events);if(Array.isArray(x.categories)&&x.categories.length)setCategories(x.categories);if(Array.isArray(x.activities))setActivities(x.activities)}catch{const clean=token.trim().toLowerCase();if(['speaker6969','2026','admin'].includes(clean)){/* stay logged in in offline mode */}else{try{const v=await api.get(`/api/admin/verify?token=${encodeURIComponent(token)}`);if(v.data?.isAdmin)return;}catch{}toast('Could not connect to live newsroom service');}}finally{setLoading(false)}}useEffect(()=>{load()},[]);useEffect(()=>{if(tab!=='members')return;const timer=window.setInterval(()=>{load()},10000);return()=>window.clearInterval(timer)},[tab]);
- const filtered=useMemo(()=>[...posts].sort((a,b)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0)).filter(p=>`${p.title} ${p.excerpt} ${p.category} ${p.author}`.toLowerCase().includes(query.toLowerCase())),[posts,query]);const totalViews=posts.reduce((n,p)=>n+(p.views||0),0);const totalLikes=posts.reduce((n,p)=>n+(p.likes||0),0);const published=posts.filter(p=>(p.status||'published')==='published').length;const drafts=posts.filter(p=>p.status==='draft').length;const reviews=posts.filter(p=>p.status==='review').length;
- async function upload(e:any){const f=e.target.files?.[0];if(!f)return;toast('Compressing and uploading image...');let dataUrl='';try{dataUrl=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const maxDim=1200;let w=img.width,h=img.height;if(w>maxDim||h>maxDim){if(w>h){h=Math.round((h*maxDim)/w);w=maxDim}else{w=Math.round((w*maxDim)/h);h=maxDim}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx)return resolve(String(reader.result));ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',0.82))};img.onerror=()=>resolve(String(reader.result));img.src=String(reader.result)};reader.onerror=reject;reader.readAsDataURL(f)});const parts=dataUrl.split(',');const r=await api.post('/api/upload',{filename:f.name.replace(/\.[^/.]+$/,'')+'.jpg',contentType:'image/jpeg',data:parts[1],token});setForm((v:any)=>({...v,image:r.data.url||dataUrl,imagePath:r.data.path||''}));toast('Cover image uploaded & optimized')}catch{setForm((v:any)=>({...v,image:dataUrl}));toast('Image attached and optimized')}}
+export default function AdminDashboard({back,toast,logout}:Props){const token=localStorage.getItem('fstv-admin-token')||'Speaker6969';const[tab,setTab]=useState<string>('overview');const[mobile,setMobile]=useState(false);const[d,setD]=useState<any>({});const b=initialData as any;const[posts,setPosts]=useState<Story[]>(()=>mergeAndFilterPosts(b?.posts||[]));const[deleteConfirm,setDeleteConfirm]=useState<Story|null>(null);const[previewStory,setPreviewStory]=useState<Story|null>(null);const[subs,setSubs]=useState<Item[]>(b?.submissions||[]);const[comments,setComments]=useState<Item[]>([]);const[polls,setPolls]=useState<Poll[]>(b?.polls||[]);const[authors,setAuthors]=useState<Item[]>(b?.authors||[]);const[newsletter,setNewsletter]=useState<Item[]>(b?.newsletter||[]);const[members,setMembers]=useState<Item[]>(b?.members||[]);const[events,setEvents]=useState<Item[]>(b?.events||[]);const[categories,setCategories]=useState<Item[]>(b?.categories||[]);const[activities,setActivities]=useState<Item[]>(b?.adminActivity||[]);const[query,setQuery]=useState('');const[form,setForm]=useState<any>({title:'',excerpt:'',body:'',category:'Campus News',author:'FSTV Desk',featured:false,breaking:false,workflow:'published',scheduledAt:'',image:''});const[author,setAuthor]=useState({name:'',bio:''});const[loading,setLoading]=useState(true);const[openMenu,setOpenMenu]=useState<string|null>(null);const[editingId,setEditingId]=useState<string|null>(null);
+ async function load(){setLoading(true);try{const r=await api.get(`/api/admin/dashboard?token=${encodeURIComponent(token)}`);const x=r.data||{};setD(x.stats||{});if(Array.isArray(x.submissions))setSubs(x.submissions);if(Array.isArray(x.comments))setComments(x.comments);if(Array.isArray(x.posts)&&x.posts.length){const sp=mergeAndFilterPosts(x.posts);setPosts(sp);}if(Array.isArray(x.polls)&&x.polls.length)setPolls(x.polls);if(Array.isArray(x.authors)&&x.authors.length)setAuthors(x.authors);if(Array.isArray(x.newsletter))setNewsletter(x.newsletter);if(Array.isArray(x.members)&&x.members.length)setMembers(x.members);if(Array.isArray(x.events)&&x.events.length)setEvents(x.events);if(Array.isArray(x.categories)&&x.categories.length)setCategories(x.categories);if(Array.isArray(x.activities))setActivities(x.activities)}catch{const clean=token.trim().toLowerCase();if(['speaker6969','2026','admin'].includes(clean)){/* stay logged in in offline mode */}else{try{const v=await api.get(`/api/admin/verify?token=${encodeURIComponent(token)}`);if(v.data?.isAdmin)return;}catch{}toast('Could not connect to live newsroom service');}}finally{setLoading(false)}}useEffect(()=>{load()},[]);useEffect(()=>{if(tab!=='members')return;const timer=window.setInterval(()=>{load()},10000);return()=>window.clearInterval(timer)},[tab]);
+ const filtered=useMemo(()=>mergeAndFilterPosts(posts).filter(p=>`${p.title} ${p.excerpt} ${p.category} ${p.author}`.toLowerCase().includes(query.toLowerCase())),[posts,query]);const totalViews=posts.reduce((n,p)=>n+(p.views||0),0);const totalLikes=posts.reduce((n,p)=>n+(p.likes||0),0);const published=posts.filter(p=>(p.status||'published')==='published').length;const drafts=posts.filter(p=>p.status==='draft').length;const reviews=posts.filter(p=>p.status==='review').length;
+ async function upload(e:any){const f=e.target.files?.[0];if(!f)return;toast('Compressing and uploading image...');let dataUrl='';try{dataUrl=await new Promise<string>((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{const maxDim=900;let w=img.width,h=img.height;if(w>maxDim||h>maxDim){if(w>h){h=Math.round((h*maxDim)/w);w=maxDim}else{w=Math.round((w*maxDim)/h);h=maxDim}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(!ctx)return resolve(String(reader.result));ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',0.75))};img.onerror=()=>resolve(String(reader.result));img.src=String(reader.result)};reader.onerror=reject;reader.readAsDataURL(f)});const parts=dataUrl.split(',');const r=await api.post('/api/upload',{filename:f.name.replace(/\.[^/.]+$/,'')+'.jpg',contentType:'image/jpeg',data:parts[1],token});setForm((v:any)=>({...v,image:r.data.url||dataUrl,imagePath:r.data.path||''}));toast('Cover image uploaded & optimized')}catch{setForm((v:any)=>({...v,image:dataUrl}));toast('Image attached and optimized')}}
   async function saveStory(){
     const bodyText = (form.body || '').trim();
     let title = form.title.trim();
@@ -26,13 +27,24 @@ export default function AdminDashboard({back,toast,logout}:Props){const token=lo
       token: activeToken
     };
     try{
+      let savedId = editingId;
       if(editingId){
         await api.put(`/api/admin/posts/${editingId}`, payload);
         toast('Story updated successfully');
       }else{
-        await api.post('/api/admin/posts', payload);
+        const res = await api.post('/api/admin/posts', payload);
+        savedId = res.data?.id || `id_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
         toast(form.workflow==='published'?'Story published successfully!':'Story saved successfully');
       }
+      const savedPostRecord = {
+        ...payload,
+        id: savedId,
+        createdAt: editingId ? (posts.find(p=>p.id===editingId)?.createdAt || Date.now()) : Date.now(),
+        time: 'Just now',
+        published: form.workflow === 'published',
+        status: form.workflow || 'published'
+      };
+      saveCustomPost(savedPostRecord as any);
       setEditingId(null);
       setForm({title:'',excerpt:'',body:'',category:'Campus News',author:'FSTV Desk',featured:false,breaking:false,workflow:'published',scheduledAt:'',image:'',imagePath:''});
       await load();
@@ -44,11 +56,22 @@ export default function AdminDashboard({back,toast,logout}:Props){const token=lo
           if(authRes.data?.token){
             localStorage.setItem('fstv-admin-token',authRes.data.token);
             payload.token = authRes.data.token;
+            let savedId = editingId;
             if(editingId){
               await api.put(`/api/admin/posts/${editingId}`, payload);
             }else{
-              await api.post('/api/admin/posts', payload);
+              const res = await api.post('/api/admin/posts', payload);
+              savedId = res.data?.id || `id_${Date.now()}_${Math.random().toString(36).slice(2,8)}`;
             }
+            const savedPostRecord = {
+              ...payload,
+              id: savedId,
+              createdAt: editingId ? (posts.find(p=>p.id===editingId)?.createdAt || Date.now()) : Date.now(),
+              time: 'Just now',
+              published: form.workflow === 'published',
+              status: form.workflow || 'published'
+            };
+            saveCustomPost(savedPostRecord as any);
             toast(form.workflow==='published'?'Story published successfully!':'Story saved successfully');
             setEditingId(null);
             setForm({title:'',excerpt:'',body:'',category:'Campus News',author:'FSTV Desk',featured:false,breaking:false,workflow:'published',scheduledAt:'',image:'',imagePath:''});
@@ -68,7 +91,7 @@ export default function AdminDashboard({back,toast,logout}:Props){const token=lo
     setTab('create');
   }
   async function confirmDelete(story:Story){
-    const id = story.id;
+    const id = story.id; recordDeletedPost(id);
     setPosts(prev => prev.filter(p => p.id !== id));
     setDeleteConfirm(null);
     setOpenMenu(null);

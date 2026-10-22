@@ -1,60 +1,51 @@
 import express from 'express';
-import path from 'path';
 import { handler as apiHandler } from './index.ts';
 import { realtimeSubscriptionRoutes } from './realtime-subscribers.ts';
 import { router as createRouter } from '../lib/appdeploy/sdk.ts';
 
 export function createExpressApp() {
   const app = express();
-  app.use(express.json({ limit: '15mb' }));
-  app.use(express.urlencoded({ extended: true }));
 
-  // Robust URL normalization middleware for Vercel Serverless Functions and reverse proxies
+  // Robust URL normalization: handles Vercel serverless rewrites and proxies
   app.use((req, _res, next) => {
-    const matched = (req.headers['x-matched-path'] as string) ||
-                    (req.headers['x-forwarded-uri'] as string) ||
-                    (req.headers['x-now-route-matches'] as string);
-    if (matched && matched.startsWith('/api')) {
-      req.url = matched;
-    } else if (req.originalUrl && req.originalUrl.startsWith('/api') && (!req.url || req.url === '/' || !req.url.startsWith('/api'))) {
-      req.url = req.originalUrl;
-    } else if (req.url && !req.url.startsWith('/api') && !req.url.startsWith('/uploads') && !req.url.startsWith('/branding') && req.url !== '/') {
-      req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
+    const forwardedUri = req.headers['x-forwarded-uri'] as string | undefined;
+    const matchedPath = req.headers['x-matched-path'] as string | undefined;
+    const queryPath = req.query?.__path as string | undefined;
+    if (forwardedUri && forwardedUri.startsWith('/api')) {
+      req.url = forwardedUri;
+    } else if (matchedPath && matchedPath.startsWith('/api')) {
+      req.url = matchedPath;
+    } else if (queryPath) {
+      const cleanSub = queryPath.replace(/^\/+/, '');
+      const searchIdx = req.url.indexOf('?');
+      const search = searchIdx !== -1 ? req.url.slice(searchIdx) : '';
+      req.url = `/api/${cleanSub}${search}`;
     }
     next();
   });
 
-  // Static uploads & branding with durable caching
-  const uploadsPath = path.resolve(process.cwd(), 'public/uploads');
-  const brandingPath = path.resolve(process.cwd(), 'public/branding');
-  app.use(
-    '/uploads',
-    express.static(uploadsPath, {
-      maxAge: '30d',
-      immutable: true,
-      setHeaders: (res) => {
-        res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
-      },
-    })
-  );
-  app.use(
-    '/branding',
-    express.static(brandingPath, {
-      maxAge: '30d',
-      immutable: true,
-      setHeaders: (res) => {
-        res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
-      },
-    })
-  );
+  // Safe body parsing: prevent hanging on Vercel / serverless when req.body is pre-parsed
+  app.use((req, res, next) => {
+    if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
+      return next();
+    }
+    express.json({ limit: '15mb' })(req, res, next);
+  });
+
+  app.use((req, res, next) => {
+    if (req.body && typeof req.body === 'object' && Object.keys(req.body).length > 0) {
+      return next();
+    }
+    express.urlencoded({ extended: true, limit: '15mb' })(req, res, next);
+  });
 
   // Mount original backend handlers
   app.use(apiHandler);
   app.use(createRouter(realtimeSubscriptionRoutes));
 
-  // Health checks
-  app.get(['/api/health', '/health', '/api', '/api/_healthcheck'], (_req, res) => {
-    res.json({ ok: true, app: 'FUNAI SPEAKER TV', status: 'online', time: Date.now() });
+  // Health check
+  app.get(['/api/health', '/api/_healthcheck'], (_req, res) => {
+    res.json({ ok: true, app: 'FUNAI SPEAKER TV', time: Date.now() });
   });
 
   return app;

@@ -16,6 +16,7 @@ export interface DbRecord {
 class MemoryDatabase {
   private tables: Map<string, Map<string, any>> = new Map();
   private backupFile = path.resolve(process.cwd(), 'data-backup.json');
+  private tmpBackupFile = path.resolve('/tmp', 'fstv-data-backup.json');
 
   constructor() {
     this.loadInitialData();
@@ -24,7 +25,16 @@ class MemoryDatabase {
   private loadInitialData() {
     try {
       let data: any = null;
-      if (fs.existsSync(this.backupFile)) {
+      // 1. Try reading from /tmp if available (most recent in serverless)
+      try {
+        if (fs.existsSync(this.tmpBackupFile)) {
+          const raw = fs.readFileSync(this.tmpBackupFile, 'utf-8');
+          data = JSON.parse(raw);
+        }
+      } catch {}
+
+      // 2. Fallback to process.cwd() data-backup.json
+      if ((!data || !Array.isArray(data.posts) || data.posts.length === 0) && fs.existsSync(this.backupFile)) {
         try {
           const raw = fs.readFileSync(this.backupFile, 'utf-8');
           data = JSON.parse(raw);
@@ -32,10 +42,26 @@ class MemoryDatabase {
           console.warn('[MemoryDatabase] Could not parse disk backup, using fallback');
         }
       }
+
+      // 3. Fallback to staticBackupData
       if (!data || !Array.isArray(data.posts) || data.posts.length === 0) {
         data = staticBackupData;
       }
-      const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity', 'adminSessions'];
+
+      const collections = [
+        'posts',
+        'polls',
+        'events',
+        'comments',
+        'authors',
+        'members',
+        'newsletter',
+        'categories',
+        'submissions',
+        'adminActivity',
+        'adminSessions',
+      ];
+
       for (const col of collections) {
         if (Array.isArray(data[col])) {
           const table = this.getTable(col);
@@ -44,6 +70,7 @@ class MemoryDatabase {
           }
         }
       }
+
       const brandingTable = this.getTable('site_branding');
       brandingTable.set('default', {
         id: 'default',
@@ -57,16 +84,37 @@ class MemoryDatabase {
 
   private persist() {
     try {
-      const collections = ['posts', 'polls', 'events', 'comments', 'authors', 'members', 'newsletter', 'categories', 'submissions', 'adminActivity', 'adminSessions'];
+      const collections = [
+        'posts',
+        'polls',
+        'events',
+        'comments',
+        'authors',
+        'members',
+        'newsletter',
+        'categories',
+        'submissions',
+        'adminActivity',
+        'adminSessions',
+      ];
       const backup: Record<string, any> = {};
       for (const col of collections) {
         backup[col] = Array.from(this.getTable(col).values());
       }
       backup.branding = { logoUrl: '/branding/logo.png' };
+      const serialized = JSON.stringify(backup, null, 2);
 
-      fs.writeFileSync(this.backupFile, JSON.stringify(backup, null, 2), 'utf-8');
+      // Persist to local disk if writable
+      try {
+        fs.writeFileSync(this.backupFile, serialized, 'utf-8');
+      } catch {}
+
+      // Persist to /tmp (guaranteed writable in serverless/cloud environments)
+      try {
+        fs.writeFileSync(this.tmpBackupFile, serialized, 'utf-8');
+      } catch {}
     } catch (err) {
-      console.error('[MemoryDatabase] Failed to persist data-backup.json:', err);
+      console.error('[MemoryDatabase] Failed to persist data backup:', err);
     }
   }
 

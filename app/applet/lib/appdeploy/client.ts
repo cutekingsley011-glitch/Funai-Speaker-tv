@@ -44,6 +44,7 @@ function parseErrorMessage(data: any, status: number): string {
 export const api = {
   get: async (url: string, config?: Record<string, any>) => {
     let fullUrl = url;
+    const token = getAdminToken();
     if (config && typeof config === 'object') {
       const params = new URLSearchParams();
       for (const [k, v] of Object.entries(config)) {
@@ -55,6 +56,9 @@ export const api = {
       if (qs) {
         fullUrl += (fullUrl.includes('?') ? '&' : '?') + qs;
       }
+    }
+    if (token && !fullUrl.includes('token=')) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + `token=${encodeURIComponent(token)}`;
     }
     const res = await fetch(fullUrl, {
       headers: { Accept: 'application/json', ...defaultHeaders(), ...(config?.headers || {}) },
@@ -67,7 +71,16 @@ export const api = {
   },
 
   post: async (url: string, body?: any, config?: Record<string, any>) => {
-    const res = await fetch(url, {
+    const token = getAdminToken();
+    let fullUrl = url;
+    if (token && !fullUrl.includes('token=')) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + `token=${encodeURIComponent(token)}`;
+    }
+    const payload =
+      body && typeof body === 'object' && !Array.isArray(body)
+        ? { ...body, token: body.token || token }
+        : (body ?? {});
+    const res = await fetch(fullUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,7 +88,7 @@ export const api = {
         ...defaultHeaders(),
         ...(config?.headers || {}),
       },
-      body: JSON.stringify(body ?? {}),
+      body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -85,7 +98,16 @@ export const api = {
   },
 
   put: async (url: string, body?: any, config?: Record<string, any>) => {
-    const res = await fetch(url, {
+    const token = getAdminToken();
+    let fullUrl = url;
+    if (token && !fullUrl.includes('token=')) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + `token=${encodeURIComponent(token)}`;
+    }
+    const payload =
+      body && typeof body === 'object' && !Array.isArray(body)
+        ? { ...body, token: body.token || token }
+        : (body ?? {});
+    const res = await fetch(fullUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -93,7 +115,7 @@ export const api = {
         ...defaultHeaders(),
         ...(config?.headers || {}),
       },
-      body: JSON.stringify(body ?? {}),
+      body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
@@ -103,8 +125,12 @@ export const api = {
   },
 
   delete: async (url: string, config?: Record<string, any>) => {
+    const token = getAdminToken();
     let fullUrl = url;
-    let bodyData: any = undefined;
+    if (token && !fullUrl.includes('token=')) {
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + `token=${encodeURIComponent(token)}`;
+    }
+    let bodyData: any = JSON.stringify({ token });
     if (config && typeof config === 'object') {
       const params = new URLSearchParams();
       for (const [k, v] of Object.entries(config)) {
@@ -116,7 +142,7 @@ export const api = {
       if (qs) {
         fullUrl += (fullUrl.includes('?') ? '&' : '?') + qs;
       }
-      bodyData = JSON.stringify(config);
+      bodyData = JSON.stringify({ ...config, token });
     }
     const res = await fetch(fullUrl, {
       method: 'DELETE',
