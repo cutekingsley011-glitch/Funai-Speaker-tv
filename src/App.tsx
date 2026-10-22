@@ -12,7 +12,58 @@ const isGistPost=(p:Post)=>{const c=(p.category||'').toLowerCase().trim();return
 const WA='2348138203351';const wa=`https://wa.me/${WA}?text=${encodeURIComponent('Hi FUNAI SPEAKER TV, my name is ')}`;const key=()=>{try{let k=localStorage.getItem('fstv-v');if(!k){k=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():'v-'+Date.now()+'-'+Math.random().toString(36).slice(2,10);localStorage.setItem('fstv-v',k)}return k}catch{return 'v-'+Date.now()+'-'+Math.random().toString(36).slice(2,10)}};const relativeTime=(createdAt?:number,fallback='Just now')=>{if(!createdAt)return fallback;const seconds=Math.max(0,Math.floor((Date.now()-createdAt)/1000));if(seconds<60)return 'Just now';const minutes=Math.floor(seconds/60);if(minutes<60)return `${minutes}m ago`;const hours=Math.floor(minutes/60);if(hours<24)return `${hours}h ago`;const days=Math.floor(hours/24);if(days<7)return `${days}d ago`;const weeks=Math.floor(days/7);if(weeks<5)return `${weeks}w ago`;return new Date(createdAt).toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'})};
 export default function App(){const rawPosts=((initialData as any)?.posts as Post[])||[],initialPosts=mergeAndFilterPosts(rawPosts),initialPolls=((initialData as any)?.polls as Poll[])||[],initialEvents=((initialData as any)?.events as Event[])||[];const[posts,setPosts]=useState<Post[]>(initialPosts),[polls,setPolls]=useState<Poll[]>(initialPolls),[events,setEvents]=useState<Event[]>(initialEvents),[comments,setComments]=useState<Record<string,Comment[]>>({}),[view,setView]=useState('Home'),[search,setSearch]=useState(''),[article,setArticle]=useState<Post|null>(null),[isAdmin,setIsAdmin]=useState(false),[toast,setToast]=useState(''),[modal,setModal]=useState(''),[draft,setDraft]=useState(localStorage.getItem('fstv-name')||localStorage.getItem('fstv-member-name')||''),[comment,setComment]=useState<Record<string,string>>({}),[expanded,setExpanded]=useState<string|null>(null),[liked,setLiked]=useState<Record<string,boolean>>(()=>JSON.parse(localStorage.getItem('fstv-liked')||'{}')),[loading,setLoading]=useState(initialPosts.length===0);
  const showToast=(msg:any)=>{if(!msg){setToast('');return;}let str='';if(typeof msg==='string'){str=msg;}else if(msg instanceof Error){str=msg.message;}else if(typeof msg==='object'){str=msg.message||msg.error||msg.detail||(msg.status?`Status ${msg.status}`:'');if(!str||str==='[object Object]'){try{str=JSON.stringify(msg);}catch{str='Notification';}}}else{str=String(msg);}if(!str||str==='[object Object]'){str='Notification';}setToast(str);};
- useEffect(()=>{load();verifyAdmin();if(!localStorage.getItem('fstv-member-name'))setModal('welcome');const t=window.setInterval(()=>{setPosts(x=>x.map(p=>({...p,time:relativeTime(p.createdAt,p.time)})));setComments(x=>Object.fromEntries(Object.entries(x).map(([id,items])=>[id,items.map(c=>({...c,time:relativeTime(c.createdAt,c.time)}))])) as Record<string,Comment[]>);},30000);return()=>window.clearInterval(t)},[]);async function verifyAdmin(){let token=localStorage.getItem('fstv-admin-token');if(!token){token='Speaker6969';localStorage.setItem('fstv-admin-token',token);}setIsAdmin(true);} async function load(){try{const[r,p,e]=await Promise.allSettled([api.get('/api/posts'),api.get('/api/polls'),api.get('/api/events')]);if(r.status==='fulfilled'&&Array.isArray(r.value.data?.posts)&&r.value.data.posts.length>0){const sp=mergeAndFilterPosts(r.value.data.posts);setPosts(sp);}if(p.status==='fulfilled'&&Array.isArray(p.value.data?.polls)&&p.value.data.polls.length>0)setPolls(p.value.data.polls);if(e.status==='fulfilled'&&Array.isArray(e.value.data?.events)&&e.value.data.events.length>0)setEvents(e.value.data.events);try{await api.post('/api/analytics/view',{visitorKey:key(),type:'site'})}catch{}}catch{/* keep existing loaded state */}finally{setLoading(false)}}
+ useEffect(()=>{load();verifyAdmin();if(!localStorage.getItem('fstv-member-name'))setModal('welcome');const t=window.setInterval(()=>{setPosts(x=>x.map(p=>({...p,time:relativeTime(p.createdAt,p.time)})));setComments(x=>Object.fromEntries(Object.entries(x).map(([id,items])=>[id,items.map(c=>({...c,time:relativeTime(c.createdAt,c.time)}))])) as Record<string,Comment[]>);},30000);return()=>window.clearInterval(t)},[]);
+
+ useEffect(()=>{
+   const handleHash = () => {
+     const hash = window.location.hash;
+     if (hash && hash.includes('#story=')) {
+       const id = hash.split('#story=')[1]?.split('&')[0];
+       if (id && posts.length > 0) {
+         const found = posts.find(p => p.id === id);
+         if (found) setArticle(found);
+       }
+     }
+   };
+   handleHash();
+   window.addEventListener('hashchange', handleHash);
+   return () => window.removeEventListener('hashchange', handleHash);
+ }, [posts]);
+
+ useEffect(()=>{
+   const setMeta = (property: string, content: string) => {
+     let el = document.querySelector(`meta[property="${property}"]`) || document.querySelector(`meta[name="${property}"]`);
+     if (!el) {
+       el = document.createElement('meta');
+       if (property.startsWith('og:')) el.setAttribute('property', property);
+       else el.setAttribute('name', property);
+       document.head.appendChild(el);
+     }
+     el.setAttribute('content', content);
+   };
+
+   if (article) {
+     document.title = `${article.title} — FUNAI SPEAKER TV`;
+     setMeta('og:title', `${article.title} — FUNAI SPEAKER TV`);
+     setMeta('og:description', article.excerpt || article.title);
+     if (article.image) {
+       const fullImg = article.image.startsWith('http') ? article.image : window.location.origin + article.image;
+       setMeta('og:image', fullImg);
+       setMeta('twitter:image', fullImg);
+     }
+     setMeta('og:url', `${window.location.origin}/#story=${article.id}`);
+     setMeta('twitter:title', `${article.title} — FUNAI SPEAKER TV`);
+     setMeta('twitter:description', article.excerpt || article.title);
+   } else {
+     document.title = 'FUNAI SPEAKER TV — Your Campus. Unfiltered.';
+     setMeta('og:title', 'FUNAI SPEAKER TV — Your Campus. Unfiltered.');
+     setMeta('og:description', 'Your campus, unfiltered. Get FUNAI campus news, updates, events, gists, polls and conversations in one place.');
+     const defaultImg = `${window.location.origin}/branding/logo.png`;
+     setMeta('og:image', defaultImg);
+     setMeta('twitter:image', defaultImg);
+     setMeta('og:url', window.location.origin);
+   }
+ }, [article]);async function verifyAdmin(){let token=localStorage.getItem('fstv-admin-token');if(!token){token='Speaker6969';localStorage.setItem('fstv-admin-token',token);}setIsAdmin(true);} async function load(){try{const[r,p,e]=await Promise.allSettled([api.get('/api/posts'),api.get('/api/polls'),api.get('/api/events')]);if(r.status==='fulfilled'&&Array.isArray(r.value.data?.posts)&&r.value.data.posts.length>0){const sp=mergeAndFilterPosts(r.value.data.posts);setPosts(sp);}if(p.status==='fulfilled'&&Array.isArray(p.value.data?.polls)&&p.value.data.polls.length>0)setPolls(p.value.data.polls);if(e.status==='fulfilled'&&Array.isArray(e.value.data?.events)&&e.value.data.events.length>0)setEvents(e.value.data.events);try{await api.post('/api/analytics/view',{visitorKey:key(),type:'site'})}catch{}}catch{/* keep existing loaded state */}finally{setLoading(false)}}
  const list=useMemo(()=>mergeAndFilterPosts(posts).filter(p=>`${p.title} ${p.excerpt} ${p.category} ${p.author}`.toLowerCase().includes(search.toLowerCase())),[posts,search]);const visiblePosts=useMemo(()=>view==='Gist'?list.filter(isGistPost):list.filter(p=>!isGistPost(p)),[list,view]);const trending=useMemo(()=>{const base=view==='Gist'?list.filter(isGistPost):list.filter(p=>!isGistPost(p));return [...base].sort((a,b)=>(b.likes+b.comments*2+(b.views||0)/10)-(a.likes+a.comments*2+(a.views||0)/10))},[list,view]);const breakingStory=useMemo(()=>posts.filter(p=>!isGistPost(p)).find(p=>p.breaking),[posts]);const go=(v:string)=>{setView(v);setArticle(null);setModal('')};const enterAdmin=()=>{let t=localStorage.getItem('fstv-admin-token');if(!t){t='Speaker6969';localStorage.setItem('fstv-admin-token',t);}setIsAdmin(true);setView('Admin');setModal('')};
  async function adminLogin(password:string){try{const p=password.trim();if(!p){showToast('Please enter your admin password');return;}try{const r=await api.post('/api/admin/login',{password:p});const t=r.data?.token||p;localStorage.setItem('fstv-admin-token',t);setIsAdmin(true);setView('Admin');setModal('');showToast('Newsroom unlocked');return;}catch(netErr:any){localStorage.setItem('fstv-admin-token',p||'Speaker6969');setIsAdmin(true);setView('Admin');setModal('');showToast('Newsroom unlocked');return;}}catch(e:any){showToast(e?.message||'Incorrect admin password');}}async function adminLogout(){localStorage.removeItem('fstv-admin-token');setIsAdmin(false);setView('Home');showToast('Admin session ended')}
  async function like(p:Post){if(liked[p.id])return;const n={...liked,[p.id]:true};setLiked(n);try{localStorage.setItem('fstv-liked',JSON.stringify(n))}catch{}setPosts(x=>x.map(q=>q.id===p.id?{...q,likes:(q.likes||0)+1}:q));if(article&&article.id===p.id)setArticle(a=>a?{...a,likes:(a.likes||0)+1}:a);try{await api.post('/api/reactions',{postId:p.id,visitorKey:key(),type:'like'})}catch{}}
@@ -39,7 +90,8 @@ function ProgressiveImage({src,alt='',className='',loading='lazy',onFallbackUrl}
 function Card({p,liked,like,open,comments,expanded,show,draft,setDraft,add,rank,toast}:{p:Post;liked:boolean;like:()=>void;open:()=>void;comments:Comment[];expanded:boolean;show:()=>void;draft:string;setDraft:(v:string)=>void;add:()=>void;rank?:number;toast:(s:string)=>void}){
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/#story=${p.id}`;
-    const text = `*${p.title}*\n\n${p.excerpt}\n\nRead more on FUNAI SPEAKER TV:\n${shareUrl}`;
+    const siteUrl = `${window.location.origin}`;
+    const text = `*${p.title}*\n\n${p.excerpt}\n\n📖 Read full story here:\n${shareUrl}\n\n🌐 Visit FUNAI SPEAKER TV:\n${siteUrl}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: p.title, text: p.excerpt, url: shareUrl });
@@ -47,12 +99,11 @@ function Card({p,liked,like,open,comments,expanded,show,draft,setDraft,add,rank,
       } catch {}
     }
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast('Story link copied to clipboard!');
+      await navigator.clipboard.writeText(text);
+      toast('Story link & preview text copied to clipboard!');
     } catch {
-      // Fallback
-      const input = document.createElement('input');
-      input.value = shareUrl;
+      const input = document.createElement('textarea');
+      input.value = text;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
@@ -64,6 +115,8 @@ function Card({p,liked,like,open,comments,expanded,show,draft,setDraft,add,rank,
 function Article({p,liked,like,back,comments,openComments,expanded,draft,setDraft,add,toast}:{p:Post;liked:boolean;like:()=>void;back:()=>void;comments:Comment[];openComments:()=>void;expanded:boolean;draft:string;setDraft:(v:string)=>void;add:()=>void;toast:(s:string)=>void}){
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/#story=${p.id}`;
+    const siteUrl = `${window.location.origin}`;
+    const text = `*${p.title}*\n\n${p.excerpt}\n\n📖 Read full story here:\n${shareUrl}\n\n🌐 Visit FUNAI SPEAKER TV:\n${siteUrl}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: p.title, text: p.excerpt, url: shareUrl });
@@ -71,11 +124,11 @@ function Article({p,liked,like,back,comments,openComments,expanded,draft,setDraf
       } catch {}
     }
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast('Story link copied to clipboard!');
+      await navigator.clipboard.writeText(text);
+      toast('Story link & preview text copied to clipboard!');
     } catch {
-      const input = document.createElement('input');
-      input.value = shareUrl;
+      const input = document.createElement('textarea');
+      input.value = text;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
