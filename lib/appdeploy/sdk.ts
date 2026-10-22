@@ -82,7 +82,16 @@ class MemoryDatabase {
     }
   }
 
+  private persistTimer: any = null;
+
   private persist() {
+    if (this.persistTimer) clearTimeout(this.persistTimer);
+    this.persistTimer = setTimeout(() => {
+      this.doPersist();
+    }, 80);
+  }
+
+  private doPersist() {
     try {
       const collections = [
         'posts',

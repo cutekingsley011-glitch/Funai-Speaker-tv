@@ -537,6 +537,23 @@
       "featured": false,
       "breaking": false,
       "id": "id_1792412087132_0hoxozt"
+    },
+    {
+      "title": "Test Story with Image",
+      "body": "This is the story body text",
+      "category": "Campus News",
+      "author": "FSTV Newsroom",
+      "image": "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      "excerpt": "This is the story body text",
+      "imagePath": "",
+      "time": "Just now",
+      "createdAt": 1792697982710,
+      "likes": 0,
+      "comments": 0,
+      "views": 0,
+      "published": true,
+      "status": "published",
+      "id": "id_1792697982710_s05pt1a"
     }
   ],
   "polls": [
@@ -1421,6 +1438,12 @@
       "detail": "Faculty of Law Moot Court Competition Begins",
       "time": 1792697219080,
       "id": "id_1792697219080_o1pzb49"
+    },
+    {
+      "action": "Published story",
+      "detail": "Test Story with Image",
+      "time": 1792697982711,
+      "id": "id_1792697982711_bpjchvc"
     }
   ],
   "adminSessions": [

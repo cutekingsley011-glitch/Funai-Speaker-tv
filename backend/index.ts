@@ -131,7 +131,30 @@ async function adminGuard(c:any){
   return false;
 }
 
-export const handler=router({'GET /api/_healthcheck':[async()=>json({message:'Success'})],'GET /api/posts':[async()=>{await seed();const{items}=await db.list<Post>('posts',{limit:100});const now=Date.now();const visible=items.filter((p:any)=>p.published===true||(p.scheduledAt&&Number(p.scheduledAt)<=now));visible.sort((a:any,b:any)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));const resolved=await Promise.all(visible.map(async(p:any)=>{const createdAt=Number(p.createdAt||0)||undefined;return {...p,createdAt,time:relativeTime(createdAt,p.time),image:await resolveImage(p.imagePath,p.image)}}));return json({posts:resolved})}],'GET /api/posts/image/:id':[async({params})=>{const[p]=await db.get<any>('posts',[params.id]);if(!p)return error('Story not found',404);const url=await resolveImage(p.imagePath,p.image);if(!url)return error('Story image not found',404);return json({url})}],'GET /api/breaking':[async()=>{await seed();const{items}=await db.list<Post>('posts',{limit:20,filter:{published:true,breaking:true}});return json({posts:items})}],'GET /api/polls':[async()=>{await seed();const{items}=await db.list<Poll>('polls',{limit:50});return json({polls:items.map(p=>{const total=p.options.reduce((s,o)=>s+o.votes,0);return {...p,options:p.options.map(o=>({...o,votes:total?Math.round(o.votes/total*100):0}))}})})}],'GET /api/events':[async()=>{await seed();const{items}=await db.list<Event>('events',{limit:50});return json({events:items})}], 'GET /api/branding':[async()=>{const{items}=await db.list<any>('site_branding',{limit:1});if(!items.length)return json({logoUrl:''});const[u]=await storage.url([items[0].logoPath]);return json({logoUrl:u?.url||''})}], 'GET /api/member/profile/:id':[async({params})=>{const[m]=await db.get<any>('members',[params.id]);if(!m)return error('Member not found',404);const{items}=await db.list<any>('comments',{limit:1000,filter:{name:m.name}});return json({member:{id:m.id,name:m.name,joinedAt:m.joinedAt,comments:items.length}})}],'GET /api/comments':[async({query})=>{if(!query.postId)return error('postId required',400);const{items}=await db.list('comments',{limit:100,filter:{postId:query.postId,status:'visible'}});const seen=new Set<string>();const clean=items.filter((c:any)=>{const id=String(c.id||'');if(!id||seen.has(id))return false;seen.add(id);return true});return json({comments:clean.map((c:any)=>({...c,time:relativeTime(Number(c.createdAt||0)||undefined,c.time)}))})}],'POST /api/comments':[async({body})=>{const b=body as any;if(!b.postId||!String(b.text||'').trim())return error('Comment text is required',400);const name=String(b.name||'').trim().slice(0,40)||'FUNAI Student';const text=String(b.text||'').trim().slice(0,500);const rec={postId:b.postId,name,text,time:'Just now',createdAt:Date.now(),likes:0,status:'visible'};const[id]=await db.add('comments',[rec]);const[p]=await db.get<Post>('posts',[b.postId]);if(p)await db.update('posts',[{id:b.postId,record:{...p,comments:(p.comments||0)+1}}]);return json({comment:{...rec,id}},201)}],'POST /api/reactions':[async({body})=>{const b=body as any;if(!b.postId)return error('Post ID required',400);const visitorKey=String(b.visitorKey||'v-'+Date.now()).trim();const q=await db.list('reactions',{limit:10,filter:{postId:b.postId,visitorKey,type:'like'}});if(q.items.length)return json({liked:true});await db.add('reactions',[{postId:b.postId,visitorKey,type:'like'}]);const[p]=await db.get<Post>('posts',[b.postId]);if(p)await db.update('posts',[{id:b.postId,record:{...p,likes:(p.likes||0)+1}}]);return json({liked:true},201)}],'POST /api/polls/vote':[async({body})=>{const b=body as any;const optionIndex=Number(b.optionIndex);const visitorKey=String(b.visitorKey||'v-'+Date.now()).trim();if(!b.pollId||!Number.isInteger(optionIndex)||optionIndex<0)return error('Invalid poll vote',400);const q=await db.list('pollVotes',{limit:10,filter:{pollId:b.pollId,visitorKey}});if(q.items.length)return error('You have already voted in this poll',409);let[p]=await db.get<Poll>('polls',[b.pollId]);if(!p){const{items}=await db.list<Poll>('polls',{limit:50});p=items.find((x:any)=>x.id===b.pollId)!}if(!p||p.active===false||optionIndex>=p.options.length)return error('Poll not found or inactive',404);await db.add('pollVotes',[{pollId:b.pollId,visitorKey,optionIndex}]);const opts=p.options.map((o,i)=>({...o,votes:i===optionIndex?o.votes+1:o.votes}));await db.update('polls',[{id:b.pollId,record:{...p,options:opts}}]);return json({voted:true,ok:true})}],'POST /api/analytics/view':[async({body})=>{const b=body as any;if(!b.visitorKey)return error('visitorKey required',400);await db.add('analytics',[{visitorKey:b.visitorKey,type:b.type||'site',postId:b.postId||'',time:Date.now()}]);if(b.postId){const[p]=await db.get<Post>('posts',[b.postId]);if(p)await db.update('posts',[{id:b.postId,record:{...p,views:(p.views||0)+1}}])}return json({ok:true})}],'POST /api/submissions':[async({body})=>{const b=body as any;const rawText=String(b.text||b.gist||b.content||'').trim();if(!rawText)return error('Write your gist before submitting',400);const name=String(b.name||'').trim().slice(0,60)||'Anonymous';const style=String(b.style||'hot').trim();const id='gist_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);await db.add('submissions',[{id,title:rawText.slice(0,60)+(rawText.length>60?'...':''),text:rawText.slice(0,1500),name,anonymous:b.anonymous!==false,style,image:String(b.image||''),status:'pending',time:'Just now',createdAt:Date.now()}]);return json({submitted:true,id},201)}],'POST /api/members':[async({body})=>{const b=body as any;const name=String(b.name||'').trim().slice(0,60);let visitorKey=String(b.visitorKey||b.key||'').trim();if(!visitorKey){visitorKey='v-'+Date.now()+'-'+Math.random().toString(36).slice(2,10)}if(!name)return error('Member name is required',400);const existing=await db.list('members',{limit:20,filter:{visitorKey}});if(existing.items.length){const m=existing.items[0] as any;if(m.name!==name)await db.update('members',[{id:m.id,record:{...m,name,updatedAt:Date.now()}}]);return json({member:{...m,name},existing:true})}const joinedAt=Date.now();const[id]=await db.add('members',[{name,visitorKey,joinedAt,joinedDate:new Date(joinedAt).toISOString()}]);return json({member:{id,name,visitorKey,joinedAt},existing:false},201)}],'POST /api/upload':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);const b=c.body as any;const allowed=['image/jpeg','image/png','image/webp'];const raw=String(b.data||'');if(!raw||!allowed.includes(String(b.contentType||'')))return error('Only JPG, PNG or WEBP images are allowed',400);if(raw.length>8*1024*1024)return error('Image is too large. Maximum size is 8MB',413);const path=`uploads/${Date.now()}-${String(b.filename||'image').replace(/[^a-zA-Z0-9._-]/g,'-')}`;const ok=(await storage.write([{path,content:raw,contentType:b.contentType}]))[0];if(!ok)return error('Upload failed',500);const[u]=await storage.url([path]);return json({url:u.url,path})}],'POST /api/admin/login':[async({body})=>{
+export const handler=router({'GET /api/_healthcheck':[async()=>json({message:'Success'})],'GET /api/posts':[async()=>{await seed();const{items}=await db.list<Post>('posts',{limit:100});const now=Date.now();const visible=items.filter((p:any)=>p.published===true||(p.scheduledAt&&Number(p.scheduledAt)<=now));visible.sort((a:any,b:any)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));const resolved=await Promise.all(visible.map(async(p:any)=>{const createdAt=Number(p.createdAt||0)||undefined;return {...p,createdAt,time:relativeTime(createdAt,p.time),image:await resolveImage(p.imagePath,p.image)}}));return json({posts:resolved})}],'GET /api/posts/image/:id':[async({params})=>{const[p]=await db.get<any>('posts',[params.id]);if(!p)return error('Story not found',404);const url=await resolveImage(p.imagePath,p.image);if(!url)return error('Story image not found',404);return json({url})}],'GET /api/breaking':[async()=>{await seed();const{items}=await db.list<Post>('posts',{limit:20,filter:{published:true,breaking:true}});return json({posts:items})}],'GET /api/polls':[async()=>{await seed();const{items}=await db.list<Poll>('polls',{limit:50});return json({polls:items.map(p=>{const total=p.options.reduce((s,o)=>s+o.votes,0);return {...p,options:p.options.map(o=>({...o,votes:total?Math.round(o.votes/total*100):0}))}})})}],'GET /api/events':[async()=>{await seed();const{items}=await db.list<Event>('events',{limit:50});return json({events:items})}], 'GET /api/branding':[async()=>{const{items}=await db.list<any>('site_branding',{limit:1});if(!items.length)return json({logoUrl:''});const[u]=await storage.url([items[0].logoPath]);return json({logoUrl:u?.url||''})}], 'GET /api/member/profile/:id':[async({params})=>{const[m]=await db.get<any>('members',[params.id]);if(!m)return error('Member not found',404);const{items}=await db.list<any>('comments',{limit:1000,filter:{name:m.name}});return json({member:{id:m.id,name:m.name,joinedAt:m.joinedAt,comments:items.length}})}],'GET /api/comments':[async({query})=>{if(!query.postId)return error('postId required',400);const{items}=await db.list('comments',{limit:100,filter:{postId:query.postId,status:'visible'}});const seen=new Set<string>();const clean=items.filter((c:any)=>{const id=String(c.id||'');if(!id||seen.has(id))return false;seen.add(id);return true});return json({comments:clean.map((c:any)=>({...c,time:relativeTime(Number(c.createdAt||0)||undefined,c.time)}))})}],'POST /api/comments':[async({body})=>{const b=body as any;if(!b.postId||!String(b.text||'').trim())return error('Comment text is required',400);const name=String(b.name||'').trim().slice(0,40)||'FUNAI Student';const text=String(b.text||'').trim().slice(0,500);const rec={postId:b.postId,name,text,time:'Just now',createdAt:Date.now(),likes:0,status:'visible'};const[id]=await db.add('comments',[rec]);const[p]=await db.get<Post>('posts',[b.postId]);if(p)await db.update('posts',[{id:b.postId,record:{...p,comments:(p.comments||0)+1}}]);return json({comment:{...rec,id}},201)}],'POST /api/reactions':[async({body})=>{const b=body as any;if(!b.postId)return error('Post ID required',400);const visitorKey=String(b.visitorKey||'v-'+Date.now()).trim();const q=await db.list('reactions',{limit:10,filter:{postId:b.postId,visitorKey,type:'like'}});if(q.items.length)return json({liked:true});await db.add('reactions',[{postId:b.postId,visitorKey,type:'like'}]);const[p]=await db.get<Post>('posts',[b.postId]);if(p)await db.update('posts',[{id:b.postId,record:{...p,likes:(p.likes||0)+1}}]);return json({liked:true},201)}],'POST /api/polls/vote':[async({body})=>{const b=body as any;const optionIndex=Number(b.optionIndex);const visitorKey=String(b.visitorKey||'v-'+Date.now()).trim();if(!b.pollId||!Number.isInteger(optionIndex)||optionIndex<0)return error('Invalid poll vote',400);const q=await db.list('pollVotes',{limit:10,filter:{pollId:b.pollId,visitorKey}});if(q.items.length)return error('You have already voted in this poll',409);let[p]=await db.get<Poll>('polls',[b.pollId]);if(!p){const{items}=await db.list<Poll>('polls',{limit:50});p=items.find((x:any)=>x.id===b.pollId)!}if(!p||p.active===false||optionIndex>=p.options.length)return error('Poll not found or inactive',404);await db.add('pollVotes',[{pollId:b.pollId,visitorKey,optionIndex}]);const opts=p.options.map((o,i)=>({...o,votes:i===optionIndex?o.votes+1:o.votes}));await db.update('polls',[{id:b.pollId,record:{...p,options:opts}}]);return json({voted:true,ok:true})}],'POST /api/analytics/view':[async({body})=>{const b=body as any;if(!b.visitorKey)return error('visitorKey required',400);await db.add('analytics',[{visitorKey:b.visitorKey,type:b.type||'site',postId:b.postId||'',time:Date.now()}]);if(b.postId){const[p]=await db.get<Post>('posts',[b.postId]);if(p)await db.update('posts',[{id:b.postId,record:{...p,views:(p.views||0)+1}}])}return json({ok:true})}],'POST /api/submissions':[async({body})=>{const b=body as any;const rawText=String(b.text||b.gist||b.content||'').trim();if(!rawText)return error('Write your gist before submitting',400);const name=String(b.name||'').trim().slice(0,60)||'Anonymous';const style=String(b.style||'hot').trim();const id='gist_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);await db.add('submissions',[{id,title:rawText.slice(0,60)+(rawText.length>60?'...':''),text:rawText.slice(0,1500),name,anonymous:b.anonymous!==false,style,image:String(b.image||''),status:'pending',time:'Just now',createdAt:Date.now()}]);return json({submitted:true,id},201)}],'POST /api/members':[async({body})=>{const b=body as any;const name=String(b.name||'').trim().slice(0,60);let visitorKey=String(b.visitorKey||b.key||'').trim();if(!visitorKey){visitorKey='v-'+Date.now()+'-'+Math.random().toString(36).slice(2,10)}if(!name)return error('Member name is required',400);const existing=await db.list('members',{limit:20,filter:{visitorKey}});if(existing.items.length){const m=existing.items[0] as any;if(m.name!==name)await db.update('members',[{id:m.id,record:{...m,name,updatedAt:Date.now()}}]);return json({member:{...m,name},existing:true})}const joinedAt=Date.now();const[id]=await db.add('members',[{name,visitorKey,joinedAt,joinedDate:new Date(joinedAt).toISOString()}]);return json({member:{id,name,visitorKey,joinedAt},existing:false},201)}],'POST /api/upload':[async c=>{
+  try{
+    if(!await adminGuard(c))return error('Admin access required',403);
+    const b=c.body as any;
+    const allowed=['image/jpeg','image/png','image/webp'];
+    let raw=String(b.data||'');
+    if(raw.startsWith('data:')){
+      const comma=raw.indexOf(',');
+      if(comma!==-1)raw=raw.slice(comma+1);
+    }
+    const contentType=String(b.contentType||'image/jpeg');
+    if(!raw||!allowed.includes(contentType))return error('Only JPG, PNG or WEBP images are allowed',400);
+    if(raw.length>10*1024*1024)return error('Image is too large. Maximum size is 8MB',413);
+    const ext=contentType==='image/png'?'png':contentType==='image/webp'?'webp':'jpg';
+    const cleanName=String(b.filename||'image').replace(/\.[^/.]+$/,'').replace(/[^a-zA-Z0-9_-]/g,'-');
+    const path=`uploads/${Date.now()}-${cleanName}.${ext}`;
+    await storage.write([{path,content:raw,contentType}]);
+    const[u]=await storage.url([path]);
+    return json({url:u?.url||`/${path}`,path});
+  }catch(err:any){
+    console.error('Upload failed:',err);
+    return error(err?.message||'Upload failed',500);
+  }
+}],'POST /api/admin/login':[async({body})=>{
   const b = body as any;
   const input = String(b.password || '').trim();
   const valid = await isPasswordValid(input);
@@ -144,39 +167,99 @@ export const handler=router({'GET /api/_healthcheck':[async()=>json({message:'Su
   await audit('Admin login', 'Successful newsroom unlock');
   return json({ token, authenticated: true });
 }],'GET /api/admin/verify':[async c=>json({isAdmin:await validAdmin(c.query.token)})],'GET /api/admin/dashboard':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);const[a,p,s,r,an,po,e,authors,newsletter,members,activities,categories]=await Promise.all([db.list('admins',{limit:100}),db.list<Post>('posts',{limit:100}),db.list('submissions',{limit:100,filter:{status:'pending'}}),db.list('reactions',{limit:1000}),db.list('analytics',{limit:1000}),db.list<Poll>('polls',{limit:50}),db.list<Event>('events',{limit:50}),db.list('authors',{limit:100}),db.list('newsletter',{limit:100}),db.list('members',{limit:1000}),db.list('adminActivity',{limit:100}),db.list('categories',{limit:100})]);const cm=await db.list('comments',{limit:1000,filter:{status:'visible'}});const resolvedPosts=await Promise.all(p.items.map(async(x:any)=>({...x,image:await resolveImage(x.imagePath,x.image)})));resolvedPosts.sort((a:any,b:any)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));const publishedPosts=resolvedPosts.filter((x:any)=>x.published!==false);const totalViews=publishedPosts.reduce((n:any,x:any)=>n+(Number(x.views)||0),0);const totalLikes=publishedPosts.reduce((n:any,x:any)=>n+(Number(x.likes)||0),0);const orderedMembers=members.items.sort((a:any,b:any)=>Number(b.joinedAt||0)-Number(a.joinedAt||0));return json({stats:{visitors:new Set(an.items.map((x:any)=>x.visitorKey)).size,stories:publishedPosts.length,comments:cm.items.length,likes:totalLikes,views:totalViews,submissions:s.items.length,admins:a.items.length,members:orderedMembers.length},posts:resolvedPosts,submissions:s.items,comments:cm.items,authors:authors.items,newsletter:newsletter.items,polls:po.items,events:e.items,members:orderedMembers,activities:activities.items,categories:categories.items})}],'POST /api/admin/posts':[async c=>{
-    if(!await adminGuard(c))return error('Admin access required',403);
-    const b=c.body as any;
-    const rawTitle=String(b.title||'').trim();
-    const bodyText=String(b.body||'').trim();
-    const rawExcerpt=String(b.excerpt||'').trim();
-    const title = rawTitle || (bodyText ? bodyText.split('\n')[0].slice(0, 80) : '') || (rawExcerpt ? rawExcerpt.slice(0, 80) : 'Campus Update');
-    if(!title && !bodyText) return error('Story headline or body is required',400);
-    const excerpt = rawExcerpt || (bodyText ? bodyText.slice(0, 180) + (bodyText.length > 180 ? '...' : '') : title);
-    const scheduledAt=b.workflow==='scheduled'&&b.scheduledAt?Number(b.scheduledAt):undefined;
-    const createdAt=Date.now();
-    const record = {
-      ...b,
-      title,
-      excerpt,
-      body: bodyText,
-      image: b.image||'',
-      imagePath: b.imagePath||'',
-      time: relativeTime(createdAt),
-      createdAt,
-      likes: Number(b.likes)||0,
-      comments: Number(b.comments)||0,
-      views: Number(b.views)||0,
-      published: b.workflow ? b.workflow === 'published' : true,
-      status: b.workflow === 'scheduled' ? 'scheduled' : (b.workflow || 'published'),
-      scheduledAt
-    };
-    delete record.token;
-    delete record.workflow;
-    const[id]=await db.add('posts',[record]);
-    try{await notifications.sendToTopic({topic:'funai-speaker-tv',notification:{title:'New FUNAI SPEAKER TV story',body:title},data:{postId:id||''}})}catch{}
-    await audit('Published story',title);
-    return json({id,ok:true},201)
-  }],'PUT /api/admin/posts/:id':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);let[p]=await db.get<Post>('posts',[c.params.id]);if(!p){const{items}=await db.list<Post>('posts',{limit:200});p=items.find((x:any)=>x.id===c.params.id)!}if(!p)return error('Story not found',404);const b=c.body as any;const title=String(b.title||p.title||'').trim();if(!title)return error('Story headline is required',400);const bodyText=String(b.body!==undefined?b.body:(p.body||'')).trim();const excerpt=String(b.excerpt||'').trim()||p.excerpt||(bodyText?bodyText.slice(0,180):title);const scheduledAt=b.workflow==='scheduled'&&b.scheduledAt?Number(b.scheduledAt):p.scheduledAt;const createdAt=Number(p.createdAt||0)||Date.now();const record={...p,...b,id:c.params.id,title,excerpt,body:bodyText,image:b.image||p.image||'',imagePath:b.imagePath||p.imagePath||'',time:relativeTime(createdAt,p.time),createdAt,likes:p.likes||0,comments:p.comments||0,views:p.views||0,published:b.workflow?b.workflow==='published':p.published!==false,status:b.workflow||p.status||'published',scheduledAt};delete record.token;delete record.workflow;await db.update('posts',[{id:c.params.id,record}]);await audit('Updated story',title);return json({ok:true})}],'DELETE /api/admin/posts/:id':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);let[p]=await db.get<Post>('posts',[c.params.id]);if(!p){const{items}=await db.list<Post>('posts',{limit:500});p=items.find((x:any)=>x.id===c.params.id||String(x.id).toLowerCase()===String(c.params.id).toLowerCase())!}const targetId=p?.id||c.params.id;const[comments,reactions,analytics]=await Promise.all([db.list<any>('comments',{limit:1000,filter:{postId:targetId}}),db.list<any>('reactions',{limit:1000,filter:{postId:targetId}}),db.list<any>('analytics',{limit:1000,filter:{postId:targetId}})]);await Promise.all([...comments.items.map((x:any)=>db.delete('comments',[x.id])),...reactions.items.map((x:any)=>db.delete('reactions',[x.id])),...analytics.items.map((x:any)=>db.delete('analytics',[x.id])),db.delete('posts',[targetId])]);await audit('Deleted story',p?.title||targetId);return json({deleted:true})}],'PUT /api/admin/submissions/:id':[async c=>{
+    try{
+      if(!await adminGuard(c))return error('Admin access required',403);
+      const b=c.body as any;
+      const rawTitle=String(b.title||'').trim();
+      const bodyText=String(b.body||'').trim();
+      const rawExcerpt=String(b.excerpt||'').trim();
+      const title = rawTitle || (bodyText ? bodyText.split('\n')[0].slice(0, 80) : '') || (rawExcerpt ? rawExcerpt.slice(0, 80) : 'Campus Update');
+      if(!title && !bodyText) return error('Story headline or body is required',400);
+      const excerpt = rawExcerpt || (bodyText ? bodyText.slice(0, 180) + (bodyText.length > 180 ? '...' : '') : title);
+      const scheduledAt=b.workflow==='scheduled'&&b.scheduledAt?Number(b.scheduledAt):undefined;
+      const createdAt=Date.now();
+      let image=String(b.image||'');
+      let imagePath=String(b.imagePath||'');
+      if(image.startsWith('data:image/')){
+        try{
+          const comma=image.indexOf(',');
+          const meta=image.slice(0,comma);
+          const raw=image.slice(comma+1);
+          const contentType=meta.includes('png')?'image/png':meta.includes('webp')?'image/webp':'image/jpeg';
+          const ext=contentType==='image/png'?'png':contentType==='image/webp'?'webp':'jpg';
+          const newPath=`uploads/${Date.now()}-story.${ext}`;
+          await storage.write([{path:newPath,content:raw,contentType}]);
+          const[u]=await storage.url([newPath]);
+          image=u?.url||`/${newPath}`;
+          imagePath=newPath;
+        }catch(e){console.warn('Could not save base64 image to storage:',e)}
+      }
+      const record = {
+        ...b,
+        title,
+        excerpt,
+        body: bodyText,
+        image,
+        imagePath,
+        time: relativeTime(createdAt),
+        createdAt,
+        likes: Number(b.likes)||0,
+        comments: Number(b.comments)||0,
+        views: Number(b.views)||0,
+        published: b.workflow ? b.workflow === 'published' : true,
+        status: b.workflow === 'scheduled' ? 'scheduled' : (b.workflow || 'published'),
+        scheduledAt
+      };
+      delete record.token;
+      delete record.workflow;
+      const[id]=await db.add('posts',[record]);
+      try{await notifications.sendToTopic({topic:'funai-speaker-tv',notification:{title:'New FUNAI SPEAKER TV story',body:title},data:{postId:id||''}})}catch{}
+      await audit('Published story',title);
+      return json({id,ok:true,image,imagePath},201);
+    }catch(err:any){
+      console.error('Error creating post:',err);
+      return error(err?.message||'Internal error creating post',500);
+    }
+  }],'PUT /api/admin/posts/:id':[async c=>{
+    try{
+      if(!await adminGuard(c))return error('Admin access required',403);
+      let[p]=await db.get<Post>('posts',[c.params.id]);
+      if(!p){const{items}=await db.list<Post>('posts',{limit:200});p=items.find((x:any)=>x.id===c.params.id)!}
+      if(!p)return error('Story not found',404);
+      const b=c.body as any;
+      const title=String(b.title||p.title||'').trim();
+      if(!title)return error('Story headline is required',400);
+      const bodyText=String(b.body!==undefined?b.body:(p.body||'')).trim();
+      const excerpt=String(b.excerpt||'').trim()||p.excerpt||(bodyText?bodyText.slice(0,180):title);
+      const scheduledAt=b.workflow==='scheduled'&&b.scheduledAt?Number(b.scheduledAt):p.scheduledAt;
+      const createdAt=Number(p.createdAt||0)||Date.now();
+      let image=b.image!==undefined?String(b.image||''):(p.image||'');
+      let imagePath=b.imagePath!==undefined?String(b.imagePath||''):(p.imagePath||'');
+      if(image.startsWith('data:image/')){
+        try{
+          const comma=image.indexOf(',');
+          const meta=image.slice(0,comma);
+          const raw=image.slice(comma+1);
+          const contentType=meta.includes('png')?'image/png':meta.includes('webp')?'image/webp':'image/jpeg';
+          const ext=contentType==='image/png'?'png':contentType==='image/webp'?'webp':'jpg';
+          const newPath=`uploads/${Date.now()}-story.${ext}`;
+          await storage.write([{path:newPath,content:raw,contentType}]);
+          const[u]=await storage.url([newPath]);
+          image=u?.url||`/${newPath}`;
+          imagePath=newPath;
+        }catch(e){console.warn('Could not save base64 image to storage:',e)}
+      }
+      const record={...p,...b,id:c.params.id,title,excerpt,body:bodyText,image,imagePath,time:relativeTime(createdAt,p.time),createdAt,likes:p.likes||0,comments:p.comments||0,views:p.views||0,published:b.workflow?b.workflow==='published':p.published!==false,status:b.workflow||p.status||'published',scheduledAt};
+      delete record.token;
+      delete record.workflow;
+      await db.update('posts',[{id:c.params.id,record}]);
+      await audit('Updated story',title);
+      return json({ok:true,image,imagePath});
+    }catch(err:any){
+      console.error('Error updating post:',err);
+      return error(err?.message||'Internal error updating post',500);
+    }
+  }],'DELETE /api/admin/posts/:id':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);let[p]=await db.get<Post>('posts',[c.params.id]);if(!p){const{items}=await db.list<Post>('posts',{limit:500});p=items.find((x:any)=>x.id===c.params.id||String(x.id).toLowerCase()===String(c.params.id).toLowerCase())!}const targetId=p?.id||c.params.id;const[comments,reactions,analytics]=await Promise.all([db.list<any>('comments',{limit:1000,filter:{postId:targetId}}),db.list<any>('reactions',{limit:1000,filter:{postId:targetId}}),db.list<any>('analytics',{limit:1000,filter:{postId:targetId}})]);await Promise.all([...comments.items.map((x:any)=>db.delete('comments',[x.id])),...reactions.items.map((x:any)=>db.delete('reactions',[x.id])),...analytics.items.map((x:any)=>db.delete('analytics',[x.id])),db.delete('posts',[targetId])]);await audit('Deleted story',p?.title||targetId);return json({deleted:true})}],'PUT /api/admin/submissions/:id':[async c=>{
     if(!await adminGuard(c))return error('Admin access required',403);
     let s:any=(await db.get<any>('submissions',[c.params.id]))[0];
     if(!s){
