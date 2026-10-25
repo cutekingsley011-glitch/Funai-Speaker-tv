@@ -640,78 +640,6 @@
       "title": "OPERATION FEED"
     }
   ],
-  "comments": [
-    {
-      "id": "2b056fff-e057-4886-8f63-4c2f83e363ef",
-      "createdAt": 1787866166914,
-      "name": "Uchenna",
-      "postId": "fa284f25-71de-4116-9515-8f1bd7b33f00",
-      "text": "This is beautiful. Easy to navigate and not complexity",
-      "time": "Aug 27, 2026",
-      "likes": 0,
-      "status": "visible"
-    },
-    {
-      "id": "a34601c4-e7ea-4917-94b1-36a0e4da4920",
-      "createdAt": 1787902375725,
-      "name": "Alaoma Esther",
-      "postId": "fa284f25-71de-4116-9515-8f1bd7b33f00",
-      "text": "This is really good. I love it 💗",
-      "time": "Aug 28, 2026",
-      "likes": 0,
-      "status": "visible"
-    },
-    {
-      "id": "ab63aff5-8d77-4779-9003-17c9412aeb7f",
-      "createdAt": 1787866166917,
-      "name": "Uchenna",
-      "postId": "fa284f25-71de-4116-9515-8f1bd7b33f00",
-      "text": "This is beautiful. Easy to navigate and not complexity",
-      "time": "Aug 27, 2026",
-      "likes": 0,
-      "status": "visible"
-    },
-    {
-      "postId": "16beceef-6945-47c6-8c76-1765134417dc",
-      "name": "Chidi",
-      "text": "This is great",
-      "time": "Just now",
-      "createdAt": 1791835827919,
-      "likes": 0,
-      "status": "visible",
-      "id": "id_1791835827919_b9e6bjh"
-    },
-    {
-      "postId": "id_1792260719963_qewae4f",
-      "name": "Chidera E.",
-      "text": "Great development for the university students!",
-      "time": "Just now",
-      "createdAt": 1792260719976,
-      "likes": 0,
-      "status": "visible",
-      "id": "id_1792260719976_06xy121"
-    },
-    {
-      "postId": "id_1792260719963_qewae4f",
-      "name": "FUNAI Student",
-      "text": "Hoping the Wi-Fi reaches the hostel annex as well.",
-      "time": "Just now",
-      "createdAt": 1792260719978,
-      "likes": 0,
-      "status": "visible",
-      "id": "id_1792260719978_1maili1"
-    },
-    {
-      "postId": "test-id",
-      "name": "Student",
-      "text": "Testing comment without token",
-      "time": "Just now",
-      "createdAt": 1792411980245,
-      "likes": 0,
-      "status": "visible",
-      "id": "id_1792411980245_xr6agvy"
-    }
-  ],
   "authors": [
     {
       "id": "auth_001_fstv",
@@ -1444,50 +1372,6 @@
       "detail": "Test Story with Image",
       "time": 1792697982711,
       "id": "id_1792697982711_bpjchvc"
-    }
-  ],
-  "adminSessions": [
-    {
-      "token": "fstv-adm-1792260719955-9fce5263-4bd1-4990-9fec-64f7cbab69ad",
-      "createdAt": 1792260719956,
-      "expiresAt": 1794852719956,
-      "id": "id_1792260719956_wxgpk4z"
-    },
-    {
-      "token": "fstv-adm-1792412082341-87157bf3-3e47-47b4-b76a-0d9cc0b362b4",
-      "createdAt": 1792412082341,
-      "expiresAt": 1795004082341,
-      "id": "id_1792412082341_56edrsk"
-    },
-    {
-      "token": "fstv-adm-1792412087124-12ea71b8-5985-4790-920f-572998f8f7f8",
-      "createdAt": 1792412087124,
-      "expiresAt": 1795004087124,
-      "id": "id_1792412087124_3cqw316"
-    },
-    {
-      "token": "fstv-adm-1792412417826-42a5b459-27d1-410b-b7d6-6cf585fd73d7",
-      "createdAt": 1792412417826,
-      "expiresAt": 1795004417826,
-      "id": "id_1792412417826_4ijwpl1"
-    },
-    {
-      "token": "fstv-adm-1792412417830-8ed98c28-c88c-4ed6-a50e-cc0e084fe83e",
-      "createdAt": 1792412417830,
-      "expiresAt": 1795004417830,
-      "id": "id_1792412417830_susiw6t"
-    },
-    {
-      "token": "fstv-adm-1792412417834-81196aef-df4d-48ab-86e6-cc81ca7ccdb5",
-      "createdAt": 1792412417834,
-      "expiresAt": 1795004417834,
-      "id": "id_1792412417834_dq7wtgm"
-    },
-    {
-      "token": "fstv-adm-1792412417836-121b0118-2ee8-4d74-bdae-011fa8af0ec0",
-      "createdAt": 1792412417836,
-      "expiresAt": 1795004417836,
-      "id": "id_1792412417836_q64d8ki"
     }
   ],
   "branding": {

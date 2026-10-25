@@ -1,12 +1,16 @@
-import staticBackupData from '../../data-backup.json';
 /**
  * @appdeploy/sdk implementation for FUNAI SPEAKER TV
  * Provides in-memory document database, storage, router, and auth
  */
 
-import { Router, Request, Response } from 'express';
+import express, { Router } from 'express';
+import type { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export interface DbRecord {
   id?: string;
@@ -25,27 +29,50 @@ class MemoryDatabase {
   private loadInitialData() {
     try {
       let data: any = null;
-      // 1. Try reading from /tmp if available (most recent in serverless)
-      try {
-        if (fs.existsSync(this.tmpBackupFile)) {
-          const raw = fs.readFileSync(this.tmpBackupFile, 'utf-8');
-          data = JSON.parse(raw);
-        }
-      } catch {}
 
-      // 2. Fallback to process.cwd() data-backup.json
-      if ((!data || !Array.isArray(data.posts) || data.posts.length === 0) && fs.existsSync(this.backupFile)) {
-        try {
-          const raw = fs.readFileSync(this.backupFile, 'utf-8');
-          data = JSON.parse(raw);
-        } catch (e) {
-          console.warn('[MemoryDatabase] Could not parse disk backup, using fallback');
+      // 1. Try reading from project backup files first (data-backup.json)
+      const candidatePaths = [
+        this.backupFile,
+        path.resolve(process.cwd(), 'data-backup.json'),
+        path.resolve(__dirname, '../../data-backup.json'),
+        path.resolve(__dirname, '../data-backup.json'),
+        path.resolve(__dirname, 'data-backup.json'),
+        '/var/task/data-backup.json'
+      ];
+
+      for (const p of candidatePaths) {
+        if (fs.existsSync(p)) {
+          try {
+            const raw = fs.readFileSync(p, 'utf-8');
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.posts) && parsed.posts.length > (data?.posts?.length || 0)) {
+              data = parsed;
+            }
+          } catch {}
         }
       }
 
-      // 3. Fallback to staticBackupData
-      if (!data || !Array.isArray(data.posts) || data.posts.length === 0) {
-        data = staticBackupData;
+      // 2. Also check /tmp if it has more recent runtime data (e.g. newly created stories)
+      try {
+        if (fs.existsSync(this.tmpBackupFile)) {
+          const raw = fs.readFileSync(this.tmpBackupFile, 'utf-8');
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.posts) && parsed.posts.length > 0) {
+            if (!data) {
+              data = parsed;
+            } else {
+              const existingMap = new Map((data.posts || []).map((x: any) => [x.id, x]));
+              for (const post of parsed.posts) {
+                if (post.id) existingMap.set(post.id, { ...(existingMap.get(post.id) || {}), ...post });
+              }
+              data.posts = Array.from(existingMap.values());
+            }
+          }
+        }
+      } catch {}
+
+      if (!data || typeof data !== 'object') {
+        data = { posts: [], polls: [], events: [] };
       }
 
       const collections = [

@@ -1,4 +1,4 @@
-import { db, ws, json, error } from "@appdeploy/sdk";
+import { db, ws, json, error } from "../lib/appdeploy/sdk.ts";
 
 const SUBSCRIPTIONS_TABLE = "entity_subscriptions";
 

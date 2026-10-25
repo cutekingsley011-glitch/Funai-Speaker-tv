@@ -1,10 +1,9 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { db, storage } from '@appdeploy/sdk';
+import { db, storage, router as createRouter } from '../lib/appdeploy/sdk.ts';
 import { handler as apiHandler } from './index.ts';
 import { realtimeSubscriptionRoutes } from './realtime-subscribers.ts';
-import { router as createRouter } from '../lib/appdeploy/sdk.ts';
 
 function escapeHtml(str: string): string {
   return String(str || '')
@@ -24,6 +23,25 @@ export function createExpressApp() {
     if (!fs.existsSync(pubUploads)) fs.mkdirSync(pubUploads, { recursive: true });
   } catch {}
 
+  // Robust URL normalization: handles Vercel serverless rewrites and proxies first
+  app.use((req, _res, next) => {
+    const forwardedUri = req.headers['x-forwarded-uri'] as string | undefined;
+    const matchedPath = req.headers['x-matched-path'] as string | undefined;
+    const queryPath = req.query?.__path as string | undefined;
+
+    if (forwardedUri && forwardedUri.startsWith('/api')) {
+      req.url = forwardedUri;
+    } else if (matchedPath && matchedPath.startsWith('/api')) {
+      req.url = matchedPath;
+    } else if (queryPath) {
+      const cleanSub = queryPath.replace(/^\/+/, '');
+      const searchIdx = req.url.indexOf('?');
+      const search = searchIdx !== -1 ? req.url.slice(searchIdx) : '';
+      req.url = `/api/${cleanSub}${search}`;
+    }
+    next();
+  });
+
   // Dedicated story image serving endpoint (handles Cloud Storage URLs, Base64 images, and local files)
   app.get(['/story-image/:id', '/api/story-image/:id'], async (req, res) => {
     try {
@@ -40,10 +58,20 @@ export function createExpressApp() {
         } catch {}
       }
       if (!post) {
-        const backupPath = path.resolve(process.cwd(), 'data-backup.json');
-        if (fs.existsSync(backupPath)) {
-          const dataBackup = JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
-          post = dataBackup?.posts?.find((p: any) => String(p.id) === String(id));
+        const candidatePaths = [
+          path.resolve(process.cwd(), 'data-backup.json'),
+          path.resolve(__dirname, '../../data-backup.json'),
+          path.resolve(__dirname, '../data-backup.json'),
+          '/var/task/data-backup.json'
+        ];
+        for (const bp of candidatePaths) {
+          if (fs.existsSync(bp)) {
+            try {
+              const dataBackup = JSON.parse(fs.readFileSync(bp, 'utf-8'));
+              post = dataBackup?.posts?.find((p: any) => String(p.id) === String(id));
+              if (post) break;
+            } catch {}
+          }
         }
       }
       if (!post) {
@@ -63,7 +91,7 @@ export function createExpressApp() {
         const mime = meta.includes('png') ? 'image/png' : meta.includes('webp') ? 'image/webp' : 'image/jpeg';
         const buf = Buffer.from(post.image.slice(comma + 1), 'base64');
         res.setHeader('Content-Type', mime);
-        res.setHeader('Cache-Control', 'public, max-age=86400');
+        res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
         return res.send(buf);
       }
 
@@ -77,6 +105,7 @@ export function createExpressApp() {
         if (fs.existsSync(filePath)) {
           return res.sendFile(filePath);
         }
+        return res.redirect(302, `/${cleanPath}`);
       }
 
       return res.redirect(302, '/branding/logo.png');
@@ -89,11 +118,12 @@ export function createExpressApp() {
   app.get('*', async (req, res, next) => {
     const originalUrl = req.originalUrl || req.url || '';
     const forwardedUri = (req.headers['x-forwarded-uri'] as string) || '';
+    const queryPath = (req.query?.__path as string) || '';
 
     // Check query params, path, and forwarded URIs for story identifier
     let storyId = (req.query.story as string) || (req.query.id as string) || (req.query.postId as string);
     if (!storyId) {
-      const candidate = `${req.path} ${originalUrl} ${forwardedUri}`;
+      const candidate = `${req.path} ${originalUrl} ${forwardedUri} ${queryPath}`;
       const match = candidate.match(/(?:[?&](?:story|id|postId)=|\/(?:story|posts|post)\/)([^&#/?\s]+)/i);
       if (match) storyId = match[1];
     }
@@ -103,9 +133,16 @@ export function createExpressApp() {
       if (req.path.startsWith('/api/') || req.path.startsWith('/uploads') || req.path.startsWith('/assets') || req.path.startsWith('/branding') || req.path.startsWith('/story-image')) {
         return next();
       }
-      if (req.path === '/api' && !req.query.story && !req.query.id) {
-        return next();
+      // If a crawler or client was rewritten to /api without a story ID, serve default homepage HTML
+      if (req.path === '/' || req.path === '/api') {
+        let htmlPath = path.resolve(process.cwd(), 'dist', 'index.html');
+        if (!fs.existsSync(htmlPath)) htmlPath = path.resolve(process.cwd(), 'index.html');
+        if (fs.existsSync(htmlPath)) {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          return res.sendFile(htmlPath);
+        }
       }
+      return next();
     }
 
     if (storyId) {
@@ -221,24 +258,7 @@ export function createExpressApp() {
     next();
   });
 
-  // Robust URL normalization: handles Vercel serverless rewrites and proxies
-  app.use((req, _res, next) => {
-    const forwardedUri = req.headers['x-forwarded-uri'] as string | undefined;
-    const matchedPath = req.headers['x-matched-path'] as string | undefined;
-    const queryPath = req.query?.__path as string | undefined;
 
-    if (forwardedUri && forwardedUri.startsWith('/api')) {
-      req.url = forwardedUri;
-    } else if (matchedPath && matchedPath.startsWith('/api')) {
-      req.url = matchedPath;
-    } else if (queryPath) {
-      const cleanSub = queryPath.replace(/^\/+/, '');
-      const searchIdx = req.url.indexOf('?');
-      const search = searchIdx !== -1 ? req.url.slice(searchIdx) : '';
-      req.url = `/api/${cleanSub}${search}`;
-    }
-    next();
-  });
 
   // Direct static serving of uploads
   app.use('/uploads', express.static(path.resolve(process.cwd(), 'public/uploads')));
