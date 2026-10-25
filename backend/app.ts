@@ -128,6 +128,23 @@ export function createExpressApp() {
       if (match) storyId = match[1];
     }
 
+    // If no explicit story ID, but the request comes from a social crawler (WhatsApp, Facebook, Twitter, Telegram, etc.),
+    // default to the latest featured or published story so social previews never fall back to the generic site logo!
+    if (!storyId) {
+      const ua = String(req.headers['user-agent'] || '').toLowerCase();
+      const isCrawler = /whatsapp|facebookexternalhit|twitterbot|telegrambot|linkedinbot|discordbot|slackbot|applebot|crawler|spider/i.test(ua);
+      if (isCrawler) {
+        try {
+          const listDb = await db.list('posts', { limit: 10 });
+          const posts = listDb.items || [];
+          const featured = posts.find((p: any) => p.featured || p.image) || posts[0];
+          if (featured?.id) {
+            storyId = featured.id;
+          }
+        } catch {}
+      }
+    }
+
     // Only skip to API router/static assets if this request is NOT for a specific story
     if (!storyId) {
       if (req.path.startsWith('/api/') || req.path.startsWith('/uploads') || req.path.startsWith('/assets') || req.path.startsWith('/branding') || req.path.startsWith('/story-image')) {
