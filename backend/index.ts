@@ -14,37 +14,28 @@ async function isPasswordValid(inputPassword: string): Promise<boolean> {
     process.env.ADMIN_SECRET,
     process.env.ADMIN_KEY,
     process.env.ADMIN_PASS
-  ];
+  ].filter(Boolean).map(s => String(s).trim().replace(/^["']|["']$/g, ''));
 
   let secretPass: string | null = null;
   try {
     const v: any = await secrets.readSecret('FSTV_ADMIN_PASSWORD');
     secretPass = typeof v === 'string' ? v.trim() : (v?.value ?? v?.secret ?? null);
   } catch {}
+  try {
+    if (!secretPass) {
+      const v2: any = await secrets.readSecret('ADMIN_PASSWORD');
+      secretPass = typeof v2 === 'string' ? v2.trim() : (v2?.value ?? v2?.secret ?? null);
+    }
+  } catch {}
 
-  const accepted = [
-    ...rawEnv,
-    secretPass,
-    'Speaker6969',
-    'speaker6969',
-    '2026',
-    'admin',
-    'Admin',
-    'speaker',
-    'Speaker',
-    'fstv',
-    'Fstv',
-    'fstvdesk',
-    'newsroom',
-    'editor',
-    'editorial',
-    'desk',
-    'Desk'
-  ]
-    .filter(Boolean)
-    .map(s => String(s).trim().replace(/^["']|["']$/g, ''));
+  const configuredSecrets = [...rawEnv];
+  if (secretPass) configuredSecrets.push(secretPass.trim().replace(/^["']|["']$/g, ''));
 
-  return accepted.some(a => a === clean || a.toLowerCase() === clean.toLowerCase());
+  if (configuredSecrets.length > 0) {
+    return configuredSecrets.some(s => s === clean);
+  }
+
+  return clean === 'Speaker6969';
 }
 
 async function validAdmin(token?: string) {
@@ -52,16 +43,6 @@ async function validAdmin(token?: string) {
   const clean = String(token).trim().replace(/^["']|["']$/g, '');
   if (!clean) return false;
   if (await isPasswordValid(clean)) return true;
-  if (clean.startsWith('fstv-adm-') || clean.startsWith('fstv_adm_') || clean.startsWith('fstv-') || clean.startsWith('adm-')) {
-    try {
-      const parts = clean.split(/[-_]/);
-      const timestampPart = parts.find(p => p.length >= 10 && Number(p) > 1700000000000);
-      if (timestampPart) {
-        const time = Number(timestampPart);
-        if (!isNaN(time) && (Date.now() - time) < 365 * 24 * 60 * 60 * 1000) return true;
-      }
-    } catch {}
-  }
   try {
     const r = await db.list('adminSessions', { limit: 1000 });
     const s = r.items.find((x: any) => x.token === clean || (x.token && String(x.token).trim() === clean)) as any;
@@ -119,15 +100,30 @@ async function audit(action:string,detail:string){
   await db.add('adminActivity',[{action,detail,time:Date.now()}])
 }
 
+async function syncPostBackup(post: any, action: 'add' | 'delete') {
+  try {
+    const fs = await import('fs');
+    const path = await import('path');
+    const bPath = path.resolve(process.cwd(), 'data-backup.json');
+    if (fs.existsSync(bPath)) {
+      const data = JSON.parse(fs.readFileSync(bPath, 'utf-8'));
+      if (action === 'delete') {
+        data.posts = (data.posts || []).filter((p: any) => String(p.id) !== String(post.id));
+      } else {
+        const remaining = (data.posts || []).filter((p: any) => String(p.id) !== String(post.id));
+        data.posts = [{ ...post }, ...remaining];
+      }
+      fs.writeFileSync(bPath, JSON.stringify(data, null, 2));
+    }
+  } catch {}
+}
+
 async function adminGuard(c:any){
   const bToken=(c.body as any)?.token;
   const qToken=c.query?.token;
   const hToken=c.req?.headers?.['x-admin-token']||(c.req?.headers?.['authorization']?String(c.req.headers['authorization']).replace(/^Bearer\s+/i,''):'');
   const candidate = bToken || qToken || hToken;
   if(candidate && await validAdmin(candidate)) return true;
-  const host = String(c.req?.headers?.['host'] || '').toLowerCase();
-  const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('0.0.0.0') || process.env.NODE_ENV !== 'production';
-  if(isLocal) return true;
   return false;
 }
 
@@ -166,7 +162,18 @@ export const handler=router({'GET /api/_healthcheck':[async()=>json({message:'Su
   await db.add('adminSessions', [{ token, createdAt: Date.now(), expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 }]);
   await audit('Admin login', 'Successful newsroom unlock');
   return json({ token, authenticated: true });
-}],'GET /api/admin/verify':[async c=>json({isAdmin:await validAdmin(c.query.token)})],'GET /api/admin/dashboard':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);const[a,p,s,r,an,po,e,authors,newsletter,members,activities,categories]=await Promise.all([db.list('admins',{limit:100}),db.list<Post>('posts',{limit:100}),db.list('submissions',{limit:100,filter:{status:'pending'}}),db.list('reactions',{limit:1000}),db.list('analytics',{limit:1000}),db.list<Poll>('polls',{limit:50}),db.list<Event>('events',{limit:50}),db.list('authors',{limit:100}),db.list('newsletter',{limit:100}),db.list('members',{limit:1000}),db.list('adminActivity',{limit:100}),db.list('categories',{limit:100})]);const cm=await db.list('comments',{limit:1000,filter:{status:'visible'}});const resolvedPosts=await Promise.all(p.items.map(async(x:any)=>({...x,image:await resolveImage(x.imagePath,x.image)})));resolvedPosts.sort((a:any,b:any)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));const publishedPosts=resolvedPosts.filter((x:any)=>x.published!==false);const totalViews=publishedPosts.reduce((n:any,x:any)=>n+(Number(x.views)||0),0);const totalLikes=publishedPosts.reduce((n:any,x:any)=>n+(Number(x.likes)||0),0);const orderedMembers=members.items.sort((a:any,b:any)=>Number(b.joinedAt||0)-Number(a.joinedAt||0));return json({stats:{visitors:new Set(an.items.map((x:any)=>x.visitorKey)).size,stories:publishedPosts.length,comments:cm.items.length,likes:totalLikes,views:totalViews,submissions:s.items.length,admins:a.items.length,members:orderedMembers.length},posts:resolvedPosts,submissions:s.items,comments:cm.items,authors:authors.items,newsletter:newsletter.items,polls:po.items,events:e.items,members:orderedMembers,activities:activities.items,categories:categories.items})}],'POST /api/admin/posts':[async c=>{
+}],'GET /api/admin/verify':[async c=>json({isAdmin:await validAdmin(c.query?.token||(c.req?.headers?.['x-admin-token'] as string))})],'POST /api/admin/logout':[async c=>{
+  const b=c.body as any;
+  const token = b?.token || c.query?.token;
+  if(token){
+    try{
+      const {items} = await db.list('adminSessions', {limit: 500});
+      const match = items.find((x: any) => x.token === token);
+      if(match?.id) await db.delete('adminSessions', [match.id]);
+    }catch{}
+  }
+  return json({success:true});
+}],'GET /api/admin/dashboard':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);const[a,p,s,r,an,po,e,authors,newsletter,members,activities,categories]=await Promise.all([db.list('admins',{limit:100}),db.list<Post>('posts',{limit:100}),db.list('submissions',{limit:100,filter:{status:'pending'}}),db.list('reactions',{limit:1000}),db.list('analytics',{limit:1000}),db.list<Poll>('polls',{limit:50}),db.list<Event>('events',{limit:50}),db.list('authors',{limit:100}),db.list('newsletter',{limit:100}),db.list('members',{limit:1000}),db.list('adminActivity',{limit:100}),db.list('categories',{limit:100})]);const cm=await db.list('comments',{limit:1000,filter:{status:'visible'}});const resolvedPosts=await Promise.all(p.items.map(async(x:any)=>({...x,image:await resolveImage(x.imagePath,x.image)})));resolvedPosts.sort((a:any,b:any)=>(Number(b.createdAt)||0)-(Number(a.createdAt)||0));const publishedPosts=resolvedPosts.filter((x:any)=>x.published!==false);const totalViews=publishedPosts.reduce((n:any,x:any)=>n+(Number(x.views)||0),0);const totalLikes=publishedPosts.reduce((n:any,x:any)=>n+(Number(x.likes)||0),0);const orderedMembers=members.items.sort((a:any,b:any)=>Number(b.joinedAt||0)-Number(a.joinedAt||0));return json({stats:{visitors:new Set(an.items.map((x:any)=>x.visitorKey)).size,stories:publishedPosts.length,comments:cm.items.length,likes:totalLikes,views:totalViews,submissions:s.items.length,admins:a.items.length,members:orderedMembers.length},posts:resolvedPosts,submissions:s.items,comments:cm.items,authors:authors.items,newsletter:newsletter.items,polls:po.items,events:e.items,members:orderedMembers,activities:activities.items,categories:categories.items})}],'POST /api/admin/posts':[async c=>{
     try{
       if(!await adminGuard(c))return error('Admin access required',403);
       const b=c.body as any;
@@ -213,6 +220,7 @@ export const handler=router({'GET /api/_healthcheck':[async()=>json({message:'Su
       delete record.token;
       delete record.workflow;
       const[id]=await db.add('posts',[record]);
+      await syncPostBackup({ ...record, id }, 'add');
       try{await notifications.sendToTopic({topic:'funai-speaker-tv',notification:{title:'New FUNAI SPEAKER TV story',body:title},data:{postId:id||''}})}catch{}
       await audit('Published story',title);
       return json({id,ok:true,image,imagePath},201);
@@ -253,13 +261,14 @@ export const handler=router({'GET /api/_healthcheck':[async()=>json({message:'Su
       delete record.token;
       delete record.workflow;
       await db.update('posts',[{id:c.params.id,record}]);
+      await syncPostBackup({ ...record }, 'add');
       await audit('Updated story',title);
       return json({ok:true,image,imagePath});
     }catch(err:any){
       console.error('Error updating post:',err);
       return error(err?.message||'Internal error updating post',500);
     }
-  }],'DELETE /api/admin/posts/:id':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);let[p]=await db.get<Post>('posts',[c.params.id]);if(!p){const{items}=await db.list<Post>('posts',{limit:500});p=items.find((x:any)=>x.id===c.params.id||String(x.id).toLowerCase()===String(c.params.id).toLowerCase())!}const targetId=p?.id||c.params.id;const[comments,reactions,analytics]=await Promise.all([db.list<any>('comments',{limit:1000,filter:{postId:targetId}}),db.list<any>('reactions',{limit:1000,filter:{postId:targetId}}),db.list<any>('analytics',{limit:1000,filter:{postId:targetId}})]);await Promise.all([...comments.items.map((x:any)=>db.delete('comments',[x.id])),...reactions.items.map((x:any)=>db.delete('reactions',[x.id])),...analytics.items.map((x:any)=>db.delete('analytics',[x.id])),db.delete('posts',[targetId])]);await audit('Deleted story',p?.title||targetId);return json({deleted:true})}],'PUT /api/admin/submissions/:id':[async c=>{
+  }],'DELETE /api/admin/posts/:id':[async c=>{if(!await adminGuard(c))return error('Admin access required',403);let[p]=await db.get<Post>('posts',[c.params.id]);if(!p){const{items}=await db.list<Post>('posts',{limit:500});p=items.find((x:any)=>x.id===c.params.id||String(x.id).toLowerCase()===String(c.params.id).toLowerCase())!}const targetId=p?.id||c.params.id;const[comments,reactions,analytics]=await Promise.all([db.list<any>('comments',{limit:1000,filter:{postId:targetId}}),db.list<any>('reactions',{limit:1000,filter:{postId:targetId}}),db.list<any>('analytics',{limit:1000,filter:{postId:targetId}})]);await Promise.all([...comments.items.map((x:any)=>db.delete('comments',[x.id])),...reactions.items.map((x:any)=>db.delete('reactions',[x.id])),...analytics.items.map((x:any)=>db.delete('analytics',[x.id])),db.delete('posts',[targetId])]);await syncPostBackup({ id: targetId }, 'delete');await audit('Deleted story',p?.title||targetId);return json({deleted:true})}],'PUT /api/admin/submissions/:id':[async c=>{
     if(!await adminGuard(c))return error('Admin access required',403);
     let s:any=(await db.get<any>('submissions',[c.params.id]))[0];
     if(!s){

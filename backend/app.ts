@@ -1,10 +1,19 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { db } from '@appdeploy/sdk';
+import { db, storage } from '@appdeploy/sdk';
 import { handler as apiHandler } from './index.ts';
 import { realtimeSubscriptionRoutes } from './realtime-subscribers.ts';
 import { router as createRouter } from '../lib/appdeploy/sdk.ts';
+
+function escapeHtml(str: string): string {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 export function createExpressApp() {
   const app = express();
@@ -15,11 +24,83 @@ export function createExpressApp() {
     if (!fs.existsSync(pubUploads)) fs.mkdirSync(pubUploads, { recursive: true });
   } catch {}
 
-  // Server-side OpenGraph Meta Tag Injection for WhatsApp & Social Crawlers (?story=ID)
+  // Dedicated story image serving endpoint (handles Cloud Storage URLs, Base64 images, and local files)
+  app.get('/story-image/:id', async (req, res) => {
+    try {
+      const id = req.params.id;
+      let post: any = null;
+      try {
+        const resDb = await db.get('posts', [id]);
+        if (resDb && resDb[0]) post = resDb[0];
+      } catch {}
+      if (!post) {
+        try {
+          const listDb = await db.list('posts', { limit: 200 });
+          post = listDb.items?.find((p: any) => p.id === id);
+        } catch {}
+      }
+      if (!post) {
+        const backupPath = path.resolve(process.cwd(), 'data-backup.json');
+        if (fs.existsSync(backupPath)) {
+          const dataBackup = JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
+          post = dataBackup?.posts?.find((p: any) => String(p.id) === String(id));
+        }
+      }
+      if (!post) {
+        return res.redirect(302, '/branding/logo.png');
+      }
+
+      if (post.imagePath) {
+        try {
+          const [u] = await storage.url([post.imagePath]);
+          if (u?.url) return res.redirect(302, u.url);
+        } catch {}
+      }
+
+      if (post.image && post.image.startsWith('data:image/')) {
+        const comma = post.image.indexOf(',');
+        const meta = post.image.slice(0, comma);
+        const mime = meta.includes('png') ? 'image/png' : meta.includes('webp') ? 'image/webp' : 'image/jpeg';
+        const buf = Buffer.from(post.image.slice(comma + 1), 'base64');
+        res.setHeader('Content-Type', mime);
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.send(buf);
+      }
+
+      if (post.image && post.image.startsWith('http')) {
+        return res.redirect(302, post.image);
+      }
+
+      if (post.image && (post.image.startsWith('/uploads') || post.image.startsWith('uploads'))) {
+        const cleanPath = post.image.replace(/^\//, '');
+        const filePath = path.resolve(process.cwd(), 'public', cleanPath);
+        if (fs.existsSync(filePath)) {
+          return res.sendFile(filePath);
+        }
+      }
+
+      return res.redirect(302, '/branding/logo.png');
+    } catch {
+      return res.redirect(302, '/branding/logo.png');
+    }
+  });
+
+  // Server-side OpenGraph Meta Tag Injection for WhatsApp, Facebook & Social Crawlers (?story=ID)
   app.get('*', async (req, res, next) => {
-    const storyId = (req.query.story as string) || (req.query.id as string);
+    // If it's an API route, static asset, or upload, pass through to other middleware
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/assets') || req.path.startsWith('/branding') || req.path.startsWith('/story-image')) {
+      return next();
+    }
+
+    let storyId = (req.query.story as string) || (req.query.id as string) || (req.query.postId as string);
+    if (!storyId) {
+      const match = req.path.match(/^\/(?:story|posts|post)\/([^/?#]+)/i);
+      if (match) storyId = match[1];
+    }
+
     if (storyId) {
       try {
+        storyId = decodeURIComponent(storyId).split('#')[0].trim();
         let post: any = null;
         try {
           const resDb = await db.get('posts', [storyId]);
@@ -28,8 +109,8 @@ export function createExpressApp() {
 
         if (!post) {
           try {
-            const listDb = await db.list('posts', { limit: 100 });
-            post = listDb.items?.find((p: any) => p.id === storyId);
+            const listDb = await db.list('posts', { limit: 200 });
+            post = listDb.items?.find((p: any) => String(p.id) === String(storyId));
           } catch {}
         }
 
@@ -38,36 +119,81 @@ export function createExpressApp() {
           if (fs.existsSync(backupPath)) {
             const dataBackup = JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
             const allPosts = dataBackup?.posts || [];
-            post = allPosts.find((p: any) => p.id === storyId);
+            post = allPosts.find((p: any) => String(p.id) === String(storyId));
           }
         }
 
         if (post) {
-          let htmlPath = path.resolve(process.cwd(), 'index.html');
-          let html = fs.readFileSync(htmlPath, 'utf-8');
-          const protocol = req.headers['x-forwarded-proto'] || req.protocol || 'https';
-          const host = req.get('host') || 'localhost:3000';
-          const imageUrl = post.image ? (post.image.startsWith('http') ? post.image : `${protocol}://${host}${post.image}`) : `${protocol}://${host}/branding/logo.png`;
-          const title = `${post.title} — FUNAI SPEAKER TV`;
-          const description = post.excerpt || post.title;
-          const shareUrl = `${protocol}://${host}/?story=${post.id}`;
-
-          html = html.replace(/<title>.*?<\/title>/, `<title>${title}</title>`)
-                     .replace(/<meta name="description" content=".*?"\/>/, `<meta name="description" content="${description.replace(/"/g, '&quot;')}"\/>`)
-                     .replace(/<meta property="og:title" content=".*?"\/>/, `<meta property="og:title" content="${title.replace(/"/g, '&quot;')}"\/>`)
-                     .replace(/<meta property="og:description" content=".*?"\/>/, `<meta property="og:description" content="${description.replace(/"/g, '&quot;')}"\/>`)
-                     .replace(/<meta property="og:image" content=".*?"\/>/, `<meta property="og:image" content="${imageUrl}"\/>`)
-                     .replace(/<meta property="og:url" content=".*?"\/>/, `<meta property="og:url" content="${shareUrl}"\/>`)
-                     .replace(/<meta name="twitter:title" content=".*?"\/>/, `<meta name="twitter:title" content="${title.replace(/"/g, '&quot;')}"\/>`)
-                     .replace(/<meta name="twitter:description" content=".*?"\/>/, `<meta name="twitter:description" content="${description.replace(/"/g, '&quot;')}"\/>`)
-                     .replace(/<meta name="twitter:image" content=".*?"\/>/, `<meta name="twitter:image" content="${imageUrl}"\/>`);
-
-          if (!html.includes('property="og:image"')) {
-            html = html.replace('</head>', `<meta property="og:image" content="${imageUrl}"><meta name="twitter:image" content="${imageUrl}"></head>`);
+          const forwardedProto = req.headers['x-forwarded-proto'] as string;
+          const forwardedHost = req.headers['x-forwarded-host'] as string;
+          const protocol = forwardedProto || req.protocol || 'https';
+          const hostHeader = forwardedHost || req.get('host') || 'localhost:3000';
+          let origin = '';
+          if (process.env.APP_URL && process.env.APP_URL.startsWith('http') && !process.env.APP_URL.includes('localhost')) {
+            origin = process.env.APP_URL.replace(/\/$/, '');
+          } else {
+            origin = `${protocol}://${hostHeader}`;
           }
 
-          res.send(html);
-          return;
+          let rawImage = post.image || '';
+          if (post.imagePath) {
+            try {
+              const [u] = await storage.url([post.imagePath]);
+              if (u?.url) rawImage = u.url;
+            } catch {}
+          }
+
+          let imageUrl = '';
+          if (rawImage.startsWith('data:image/')) {
+            imageUrl = `${origin}/story-image/${encodeURIComponent(post.id)}`;
+          } else if (rawImage.startsWith('http://') || rawImage.startsWith('https://')) {
+            imageUrl = rawImage;
+          } else if (rawImage.trim()) {
+            const clean = rawImage.startsWith('/') ? rawImage : `/${rawImage}`;
+            imageUrl = `${origin}${clean}`;
+          } else {
+            imageUrl = `${origin}/branding/logo.png`;
+          }
+
+          const title = `${post.title} — FUNAI SPEAKER TV`;
+          const description = (post.excerpt || post.title || 'FUNAI campus news, updates and conversations.').trim();
+          const shareUrl = `${origin}/?story=${encodeURIComponent(post.id)}`;
+          const imageType = imageUrl.toLowerCase().endsWith('.png') ? 'image/png' : imageUrl.toLowerCase().endsWith('.webp') ? 'image/webp' : 'image/jpeg';
+
+          let htmlPath = path.resolve(process.cwd(), 'dist', 'index.html');
+          if (!fs.existsSync(htmlPath)) {
+            htmlPath = path.resolve(process.cwd(), 'index.html');
+          }
+          let html = fs.readFileSync(htmlPath, 'utf-8');
+
+          // Strip any default meta tags to prevent collision
+          html = html
+            .replace(/<title>[\s\S]*?<\/title>/gi, '')
+            .replace(/<meta\s+[^>]*?(?:name|property)=["'](?:description|og:[^"']+|twitter:[^"']+)["'][^>]*?>/gi, '');
+
+          // Inject complete, explicit OpenGraph & Twitter tags optimized for WhatsApp preview
+          const injectedMeta = [
+            `<title>${escapeHtml(title)}</title>`,
+            `<meta name="description" content="${escapeHtml(description)}">`,
+            `<meta property="og:site_name" content="FUNAI SPEAKER TV">`,
+            `<meta property="og:type" content="article">`,
+            `<meta property="og:title" content="${escapeHtml(title)}">`,
+            `<meta property="og:description" content="${escapeHtml(description)}">`,
+            `<meta property="og:url" content="${escapeHtml(shareUrl)}">`,
+            `<meta property="og:image" content="${escapeHtml(imageUrl)}">`,
+            `<meta property="og:image:secure_url" content="${escapeHtml(imageUrl)}">`,
+            `<meta property="og:image:type" content="${imageType}">`,
+            `<meta property="og:image:width" content="1200">`,
+            `<meta property="og:image:height" content="630">`,
+            `<meta name="twitter:card" content="summary_large_image">`,
+            `<meta name="twitter:title" content="${escapeHtml(title)}">`,
+            `<meta name="twitter:description" content="${escapeHtml(description)}">`,
+            `<meta name="twitter:image" content="${escapeHtml(imageUrl)}">`
+          ].join('\n    ');
+
+          html = html.replace('<head>', `<head>\n    ${injectedMeta}`);
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+          return res.send(html);
         }
       } catch (e) {
         console.warn('Error injecting story meta:', e);
