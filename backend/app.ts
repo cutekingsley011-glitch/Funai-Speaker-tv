@@ -25,7 +25,7 @@ export function createExpressApp() {
   } catch {}
 
   // Dedicated story image serving endpoint (handles Cloud Storage URLs, Base64 images, and local files)
-  app.get('/story-image/:id', async (req, res) => {
+  app.get(['/story-image/:id', '/api/story-image/:id'], async (req, res) => {
     try {
       const id = req.params.id;
       let post: any = null;
@@ -87,15 +87,25 @@ export function createExpressApp() {
 
   // Server-side OpenGraph Meta Tag Injection for WhatsApp, Facebook & Social Crawlers (?story=ID)
   app.get('*', async (req, res, next) => {
-    // If it's an API route, static asset, or upload, pass through to other middleware
-    if (req.path.startsWith('/api') || req.path.startsWith('/uploads') || req.path.startsWith('/assets') || req.path.startsWith('/branding') || req.path.startsWith('/story-image')) {
-      return next();
-    }
+    const originalUrl = req.originalUrl || req.url || '';
+    const forwardedUri = (req.headers['x-forwarded-uri'] as string) || '';
 
+    // Check query params, path, and forwarded URIs for story identifier
     let storyId = (req.query.story as string) || (req.query.id as string) || (req.query.postId as string);
     if (!storyId) {
-      const match = req.path.match(/^\/(?:story|posts|post)\/([^/?#]+)/i);
+      const candidate = `${req.path} ${originalUrl} ${forwardedUri}`;
+      const match = candidate.match(/(?:[?&](?:story|id|postId)=|\/(?:story|posts|post)\/)([^&#/?\s]+)/i);
       if (match) storyId = match[1];
+    }
+
+    // Only skip to API router/static assets if this request is NOT for a specific story
+    if (!storyId) {
+      if (req.path.startsWith('/api/') || req.path.startsWith('/uploads') || req.path.startsWith('/assets') || req.path.startsWith('/branding') || req.path.startsWith('/story-image')) {
+        return next();
+      }
+      if (req.path === '/api' && !req.query.story && !req.query.id) {
+        return next();
+      }
     }
 
     if (storyId) {
@@ -160,11 +170,20 @@ export function createExpressApp() {
           const shareUrl = `${origin}/?story=${encodeURIComponent(post.id)}`;
           const imageType = imageUrl.toLowerCase().endsWith('.png') ? 'image/png' : imageUrl.toLowerCase().endsWith('.webp') ? 'image/webp' : 'image/jpeg';
 
-          let htmlPath = path.resolve(process.cwd(), 'dist', 'index.html');
-          if (!fs.existsSync(htmlPath)) {
-            htmlPath = path.resolve(process.cwd(), 'index.html');
+          let html = '';
+          try {
+            let htmlPath = path.resolve(process.cwd(), 'dist', 'index.html');
+            if (!fs.existsSync(htmlPath)) {
+              htmlPath = path.resolve(process.cwd(), 'index.html');
+            }
+            if (fs.existsSync(htmlPath)) {
+              html = fs.readFileSync(htmlPath, 'utf-8');
+            }
+          } catch {}
+
+          if (!html) {
+            html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escapeHtml(title)}</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>`;
           }
-          let html = fs.readFileSync(htmlPath, 'utf-8');
 
           // Strip any default meta tags to prevent collision
           html = html

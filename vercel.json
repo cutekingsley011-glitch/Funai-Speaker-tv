@@ -1,7 +1,51 @@
 {
   "buildCommand": "vite build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/*.ts": {
+      "includeFiles": "{dist/**,index.html,data-backup.json,public/**}"
+    }
+  },
   "rewrites": [
+    {
+      "source": "/story-image/(.*)",
+      "destination": "/api?__path=story-image/$1"
+    },
+    {
+      "source": "/story/(.*)",
+      "destination": "/api?__path=story/$1"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "query",
+          "key": "story"
+        }
+      ],
+      "destination": "/api"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "query",
+          "key": "id"
+        }
+      ],
+      "destination": "/api"
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|whatsapp|twitterbot|telegrambot|linkedinbot|discordbot|slackbot).*"
+        }
+      ],
+      "destination": "/api"
+    },
     {
       "source": "/api/(.*)",
       "destination": "/api?__path=$1"
