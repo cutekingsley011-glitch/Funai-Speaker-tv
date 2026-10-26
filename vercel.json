@@ -1,8 +1,8 @@
 {
-  "buildCommand": "vite build",
+  "buildCommand": "vite build && esbuild api/index.ts --bundle --platform=node --format=esm --target=node18 --outfile=api/index.js",
   "outputDirectory": "dist",
   "functions": {
-    "api/*.ts": {
+    "api/*": {
       "includeFiles": "{dist/**,index.html,data-backup.json,public/**}"
     }
   },

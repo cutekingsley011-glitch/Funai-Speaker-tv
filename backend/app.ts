@@ -188,15 +188,17 @@ export function createExpressApp() {
         }
 
         if (post) {
-          const forwardedProto = req.headers['x-forwarded-proto'] as string;
-          const forwardedHost = req.headers['x-forwarded-host'] as string;
-          const protocol = forwardedProto || req.protocol || 'https';
-          const hostHeader = forwardedHost || req.get('host') || 'localhost:3000';
           let origin = '';
-          if (process.env.APP_URL && process.env.APP_URL.startsWith('http') && !process.env.APP_URL.includes('localhost')) {
+          const rawHost = (req.headers && (req.headers['x-forwarded-host'] || req.headers.host)) || '';
+          const hostHeader = rawHost ? String(rawHost).split(',')[0].trim() : '';
+          const proto = (req.headers && req.headers['x-forwarded-proto']) ? String(req.headers['x-forwarded-proto']).split(',')[0].trim() : 'https';
+
+          if (hostHeader && !hostHeader.includes('localhost') && !hostHeader.includes('127.0.0.1')) {
+            origin = `${proto}://${hostHeader}`;
+          } else if (process.env.APP_URL && process.env.APP_URL.startsWith('http') && !process.env.APP_URL.includes('localhost')) {
             origin = process.env.APP_URL.replace(/\/$/, '');
           } else {
-            origin = `${protocol}://${hostHeader}`;
+            origin = 'https://funaispeakertv.com';
           }
 
           let rawImage = post.image || '';
@@ -226,12 +228,20 @@ export function createExpressApp() {
 
           let html = '';
           try {
-            let htmlPath = path.resolve(process.cwd(), 'dist', 'index.html');
-            if (!fs.existsSync(htmlPath)) {
-              htmlPath = path.resolve(process.cwd(), 'index.html');
-            }
-            if (fs.existsSync(htmlPath)) {
-              html = fs.readFileSync(htmlPath, 'utf-8');
+            const htmlCandidates = [
+              path.resolve(process.cwd(), 'dist', 'index.html'),
+              path.resolve(process.cwd(), 'index.html'),
+              path.resolve(__dirname, '../../dist/index.html'),
+              path.resolve(__dirname, '../dist/index.html'),
+              path.resolve(__dirname, 'dist/index.html'),
+              '/var/task/dist/index.html',
+              '/var/task/index.html'
+            ];
+            for (const hc of htmlCandidates) {
+              if (fs.existsSync(hc)) {
+                html = fs.readFileSync(hc, 'utf-8');
+                if (html) break;
+              }
             }
           } catch {}
 
