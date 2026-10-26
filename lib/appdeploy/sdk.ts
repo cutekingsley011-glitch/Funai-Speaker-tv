@@ -61,9 +61,12 @@ class MemoryDatabase {
             if (!data) {
               data = parsed;
             } else {
-              const existingMap = new Map((data.posts || []).map((x: any) => [x.id, x]));
+              const existingMap = new Map<string, any>((data.posts || []).map((x: any) => [x.id, x]));
               for (const post of parsed.posts) {
-                if (post.id) existingMap.set(post.id, { ...(existingMap.get(post.id) || {}), ...post });
+                if (post.id) {
+                  const existing = existingMap.get(post.id) || {};
+                  existingMap.set(post.id, Object.assign({}, existing, post));
+                }
               }
               data.posts = Array.from(existingMap.values());
             }
@@ -93,7 +96,13 @@ class MemoryDatabase {
         if (Array.isArray(data[col])) {
           const table = this.getTable(col);
           for (const item of data[col]) {
-            if (item.id) table.set(item.id, item);
+            if (item.id) {
+              if (col === 'posts') {
+                if (item.title) item.title = String(item.title).trim();
+                if (item.excerpt) item.excerpt = String(item.excerpt).trim();
+              }
+              table.set(item.id, item);
+            }
           }
         }
       }

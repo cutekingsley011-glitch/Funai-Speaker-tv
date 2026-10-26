@@ -42,7 +42,7 @@ export function createExpressApp() {
     next();
   });
 
-  // Dedicated story image serving endpoint (handles Cloud Storage URLs, Base64 images, and local files)
+  // Dedicated story image serving endpoint (handles direct disk files, Cloud Storage URLs, Base64 images, and local files)
   app.get(['/story-image/:id', '/api/story-image/:id'], async (req, res) => {
     try {
       const id = req.params.id;
@@ -62,7 +62,9 @@ export function createExpressApp() {
           path.resolve(process.cwd(), 'data-backup.json'),
           path.resolve(__dirname, '../../data-backup.json'),
           path.resolve(__dirname, '../data-backup.json'),
-          '/var/task/data-backup.json'
+          path.resolve(__dirname, 'data-backup.json'),
+          '/var/task/data-backup.json',
+          '/tmp/fstv-data-backup.json'
         ];
         for (const bp of candidatePaths) {
           if (fs.existsSync(bp)) {
@@ -78,13 +80,36 @@ export function createExpressApp() {
         return res.redirect(302, '/branding/logo.png');
       }
 
-      if (post.imagePath) {
-        try {
-          const [u] = await storage.url([post.imagePath]);
-          if (u?.url) return res.redirect(302, u.url);
-        } catch {}
+      // 1. Direct local file serving without redirects (WhatsApp scrapers prefer direct HTTP 200)
+      const candidateFileNames = [
+        post.image ? post.image.replace(/^\//, '') : '',
+        post.imagePath ? post.imagePath.replace(/^\//, '') : '',
+        `uploads/post-${id}.png`,
+        `uploads/post-${id}.jpg`
+      ].filter(Boolean);
+
+      for (const fn of candidateFileNames) {
+        const testPaths = [
+          path.resolve(process.cwd(), 'dist', fn),
+          path.resolve(process.cwd(), 'public', fn),
+          path.resolve(__dirname, '../../dist', fn),
+          path.resolve(__dirname, '../../public', fn),
+          path.resolve(__dirname, '../dist', fn),
+          path.resolve(__dirname, '../public', fn),
+          `/var/task/dist/${fn}`,
+          `/var/task/public/${fn}`
+        ];
+        for (const tp of testPaths) {
+          if (fs.existsSync(tp)) {
+            const mime = tp.endsWith('.png') ? 'image/png' : tp.endsWith('.webp') ? 'image/webp' : 'image/jpeg';
+            res.setHeader('Content-Type', mime);
+            res.setHeader('Cache-Control', 'public, max-age=86400, s-maxage=86400');
+            return res.sendFile(tp);
+          }
+        }
       }
 
+      // 2. Base64 encoded image
       if (post.image && post.image.startsWith('data:image/')) {
         const comma = post.image.indexOf(',');
         const meta = post.image.slice(0, comma);
@@ -95,26 +120,27 @@ export function createExpressApp() {
         return res.send(buf);
       }
 
+      // 3. Cloud storage signed / public URL
+      if (post.imagePath) {
+        try {
+          const [u] = await storage.url([post.imagePath]);
+          if (u?.url && u.url.startsWith('http')) return res.redirect(302, u.url);
+        } catch {}
+      }
+
+      // 4. Remote HTTP URL
       if (post.image && post.image.startsWith('http')) {
         return res.redirect(302, post.image);
       }
 
-      if (post.image && (post.image.startsWith('/uploads') || post.image.startsWith('uploads'))) {
-        const cleanPath = post.image.replace(/^\//, '');
-        const filePath = path.resolve(process.cwd(), 'public', cleanPath);
-        if (fs.existsSync(filePath)) {
-          return res.sendFile(filePath);
-        }
-        return res.redirect(302, `/${cleanPath}`);
-      }
-
       return res.redirect(302, '/branding/logo.png');
-    } catch {
+    } catch (err) {
+      console.error('[story-image error]', err);
       return res.redirect(302, '/branding/logo.png');
     }
   });
 
-  // Server-side OpenGraph Meta Tag Injection for WhatsApp, Facebook & Social Crawlers (?story=ID)
+  // Server-side OpenGraph Meta Tag Injection for WhatsApp, Facebook & Social Crawlers (?story=ID or /story/:id)
   app.get('*', async (req, res, next) => {
     const originalUrl = req.originalUrl || req.url || '';
     const forwardedUri = (req.headers['x-forwarded-uri'] as string) || '';
@@ -122,9 +148,13 @@ export function createExpressApp() {
 
     // Check query params, path, and forwarded URIs for story identifier
     let storyId = (req.query.story as string) || (req.query.id as string) || (req.query.postId as string);
+    if (!storyId && queryPath) {
+      const qm = queryPath.match(/(?:^|\/)(?:story|posts|post)\/([^/?#\s]+)/i);
+      if (qm) storyId = qm[1];
+    }
     if (!storyId) {
       const candidate = `${req.path} ${originalUrl} ${forwardedUri} ${queryPath}`;
-      const match = candidate.match(/(?:[?&](?:story|id|postId)=|\/(?:story|posts|post)\/)([^&#/?\s]+)/i);
+      const match = candidate.match(/(?:[?&](?:story|id|postId)=|(?:^|\/)(?:story|posts|post)\/)([^&#/?\s]+)/i);
       if (match) storyId = match[1];
     }
 
@@ -164,7 +194,7 @@ export function createExpressApp() {
 
     if (storyId) {
       try {
-        storyId = decodeURIComponent(storyId).split('#')[0].trim();
+        storyId = decodeURIComponent(storyId).split('#')[0].split('?')[0].trim();
         let post: any = null;
         try {
           const resDb = await db.get('posts', [storyId]);
@@ -179,11 +209,23 @@ export function createExpressApp() {
         }
 
         if (!post) {
-          const backupPath = path.resolve(process.cwd(), 'data-backup.json');
-          if (fs.existsSync(backupPath)) {
-            const dataBackup = JSON.parse(fs.readFileSync(backupPath, 'utf-8'));
-            const allPosts = dataBackup?.posts || [];
-            post = allPosts.find((p: any) => String(p.id) === String(storyId));
+          const backupCandidates = [
+            path.resolve(process.cwd(), 'data-backup.json'),
+            path.resolve(__dirname, '../../data-backup.json'),
+            path.resolve(__dirname, '../data-backup.json'),
+            path.resolve(__dirname, 'data-backup.json'),
+            '/var/task/data-backup.json',
+            '/tmp/fstv-data-backup.json'
+          ];
+          for (const bp of backupCandidates) {
+            if (fs.existsSync(bp)) {
+              try {
+                const dataBackup = JSON.parse(fs.readFileSync(bp, 'utf-8'));
+                const allPosts = dataBackup?.posts || [];
+                post = allPosts.find((p: any) => String(p.id) === String(storyId));
+                if (post) break;
+              } catch {}
+            }
           }
         }
 
@@ -221,9 +263,11 @@ export function createExpressApp() {
             imageUrl = `${origin}/branding/logo.png`;
           }
 
-          const title = `${post.title} — FUNAI SPEAKER TV`;
-          const description = (post.excerpt || post.title || 'FUNAI campus news, updates and conversations.').trim();
-          const shareUrl = `${origin}/?story=${encodeURIComponent(post.id)}`;
+          const cleanTitle = (post.title || '').trim().replace(/\s+/g, ' ');
+          const cleanExcerpt = (post.excerpt || post.title || 'FUNAI campus news, updates and conversations.').trim().replace(/\s+/g, ' ');
+          const title = `${cleanTitle} — FUNAI SPEAKER TV`;
+          const description = cleanExcerpt;
+          const shareUrl = `${origin}/story/${encodeURIComponent(post.id)}`;
           const imageType = imageUrl.toLowerCase().endsWith('.png') ? 'image/png' : imageUrl.toLowerCase().endsWith('.webp') ? 'image/webp' : 'image/jpeg';
 
           let html = '';
@@ -252,7 +296,8 @@ export function createExpressApp() {
           // Strip any default meta tags to prevent collision
           html = html
             .replace(/<title>[\s\S]*?<\/title>/gi, '')
-            .replace(/<meta\s+[^>]*?(?:name|property)=["'](?:description|og:[^"']+|twitter:[^"']+)["'][^>]*?>/gi, '');
+            .replace(/<meta\s+[^>]*?(?:name|property)=["'](?:description|og:[^"']+|twitter:[^"']+)["'][^>]*?>/gi, '')
+            .replace(/<link\s+[^>]*?rel=["']image_src["'][^>]*?>/gi, '');
 
           // Inject complete, explicit OpenGraph & Twitter tags optimized for WhatsApp preview
           const injectedMeta = [
@@ -268,6 +313,8 @@ export function createExpressApp() {
             `<meta property="og:image:type" content="${imageType}">`,
             `<meta property="og:image:width" content="1200">`,
             `<meta property="og:image:height" content="630">`,
+            `<meta property="og:image:alt" content="${escapeHtml(cleanTitle)}">`,
+            `<link rel="image_src" href="${escapeHtml(imageUrl)}">`,
             `<meta name="twitter:card" content="summary_large_image">`,
             `<meta name="twitter:title" content="${escapeHtml(title)}">`,
             `<meta name="twitter:description" content="${escapeHtml(description)}">`,

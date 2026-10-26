@@ -22754,7 +22754,10 @@ var MemoryDatabase = class {
             } else {
               const existingMap = new Map((data.posts || []).map((x) => [x.id, x]));
               for (const post of parsed.posts) {
-                if (post.id) existingMap.set(post.id, { ...existingMap.get(post.id) || {}, ...post });
+                if (post.id) {
+                  const existing = existingMap.get(post.id) || {};
+                  existingMap.set(post.id, Object.assign({}, existing, post));
+                }
               }
               data.posts = Array.from(existingMap.values());
             }
@@ -22782,7 +22785,13 @@ var MemoryDatabase = class {
         if (Array.isArray(data[col])) {
           const table = this.getTable(col);
           for (const item of data[col]) {
-            if (item.id) table.set(item.id, item);
+            if (item.id) {
+              if (col === "posts") {
+                if (item.title) item.title = String(item.title).trim();
+                if (item.excerpt) item.excerpt = String(item.excerpt).trim();
+              }
+              table.set(item.id, item);
+            }
           }
         }
       }
@@ -23713,7 +23722,9 @@ function createExpressApp() {
           path2.resolve(process.cwd(), "data-backup.json"),
           path2.resolve(__dirname, "../../data-backup.json"),
           path2.resolve(__dirname, "../data-backup.json"),
-          "/var/task/data-backup.json"
+          path2.resolve(__dirname, "data-backup.json"),
+          "/var/task/data-backup.json",
+          "/tmp/fstv-data-backup.json"
         ];
         for (const bp of candidatePaths) {
           if (fs2.existsSync(bp)) {
@@ -23729,11 +23740,30 @@ function createExpressApp() {
       if (!post) {
         return res.redirect(302, "/branding/logo.png");
       }
-      if (post.imagePath) {
-        try {
-          const [u] = await storage.url([post.imagePath]);
-          if (u?.url) return res.redirect(302, u.url);
-        } catch {
+      const candidateFileNames = [
+        post.image ? post.image.replace(/^\//, "") : "",
+        post.imagePath ? post.imagePath.replace(/^\//, "") : "",
+        `uploads/post-${id}.png`,
+        `uploads/post-${id}.jpg`
+      ].filter(Boolean);
+      for (const fn of candidateFileNames) {
+        const testPaths = [
+          path2.resolve(process.cwd(), "dist", fn),
+          path2.resolve(process.cwd(), "public", fn),
+          path2.resolve(__dirname, "../../dist", fn),
+          path2.resolve(__dirname, "../../public", fn),
+          path2.resolve(__dirname, "../dist", fn),
+          path2.resolve(__dirname, "../public", fn),
+          `/var/task/dist/${fn}`,
+          `/var/task/public/${fn}`
+        ];
+        for (const tp of testPaths) {
+          if (fs2.existsSync(tp)) {
+            const mime = tp.endsWith(".png") ? "image/png" : tp.endsWith(".webp") ? "image/webp" : "image/jpeg";
+            res.setHeader("Content-Type", mime);
+            res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
+            return res.sendFile(tp);
+          }
         }
       }
       if (post.image && post.image.startsWith("data:image/")) {
@@ -23745,19 +23775,19 @@ function createExpressApp() {
         res.setHeader("Cache-Control", "public, max-age=86400, s-maxage=86400");
         return res.send(buf);
       }
+      if (post.imagePath) {
+        try {
+          const [u] = await storage.url([post.imagePath]);
+          if (u?.url && u.url.startsWith("http")) return res.redirect(302, u.url);
+        } catch {
+        }
+      }
       if (post.image && post.image.startsWith("http")) {
         return res.redirect(302, post.image);
       }
-      if (post.image && (post.image.startsWith("/uploads") || post.image.startsWith("uploads"))) {
-        const cleanPath = post.image.replace(/^\//, "");
-        const filePath = path2.resolve(process.cwd(), "public", cleanPath);
-        if (fs2.existsSync(filePath)) {
-          return res.sendFile(filePath);
-        }
-        return res.redirect(302, `/${cleanPath}`);
-      }
       return res.redirect(302, "/branding/logo.png");
-    } catch {
+    } catch (err) {
+      console.error("[story-image error]", err);
       return res.redirect(302, "/branding/logo.png");
     }
   });
@@ -23766,9 +23796,13 @@ function createExpressApp() {
     const forwardedUri = req.headers["x-forwarded-uri"] || "";
     const queryPath = req.query?.__path || "";
     let storyId = req.query.story || req.query.id || req.query.postId;
+    if (!storyId && queryPath) {
+      const qm = queryPath.match(/(?:^|\/)(?:story|posts|post)\/([^/?#\s]+)/i);
+      if (qm) storyId = qm[1];
+    }
     if (!storyId) {
       const candidate = `${req.path} ${originalUrl} ${forwardedUri} ${queryPath}`;
-      const match = candidate.match(/(?:[?&](?:story|id|postId)=|\/(?:story|posts|post)\/)([^&#/?\s]+)/i);
+      const match = candidate.match(/(?:[?&](?:story|id|postId)=|(?:^|\/)(?:story|posts|post)\/)([^&#/?\s]+)/i);
       if (match) storyId = match[1];
     }
     if (!storyId) {
@@ -23802,7 +23836,7 @@ function createExpressApp() {
     }
     if (storyId) {
       try {
-        storyId = decodeURIComponent(storyId).split("#")[0].trim();
+        storyId = decodeURIComponent(storyId).split("#")[0].split("?")[0].trim();
         let post = null;
         try {
           const resDb = await db.get("posts", [storyId]);
@@ -23817,11 +23851,24 @@ function createExpressApp() {
           }
         }
         if (!post) {
-          const backupPath = path2.resolve(process.cwd(), "data-backup.json");
-          if (fs2.existsSync(backupPath)) {
-            const dataBackup = JSON.parse(fs2.readFileSync(backupPath, "utf-8"));
-            const allPosts = dataBackup?.posts || [];
-            post = allPosts.find((p) => String(p.id) === String(storyId));
+          const backupCandidates = [
+            path2.resolve(process.cwd(), "data-backup.json"),
+            path2.resolve(__dirname, "../../data-backup.json"),
+            path2.resolve(__dirname, "../data-backup.json"),
+            path2.resolve(__dirname, "data-backup.json"),
+            "/var/task/data-backup.json",
+            "/tmp/fstv-data-backup.json"
+          ];
+          for (const bp of backupCandidates) {
+            if (fs2.existsSync(bp)) {
+              try {
+                const dataBackup = JSON.parse(fs2.readFileSync(bp, "utf-8"));
+                const allPosts = dataBackup?.posts || [];
+                post = allPosts.find((p) => String(p.id) === String(storyId));
+                if (post) break;
+              } catch {
+              }
+            }
           }
         }
         if (post) {
@@ -23855,9 +23902,11 @@ function createExpressApp() {
           } else {
             imageUrl = `${origin}/branding/logo.png`;
           }
-          const title = `${post.title} \u2014 FUNAI SPEAKER TV`;
-          const description = (post.excerpt || post.title || "FUNAI campus news, updates and conversations.").trim();
-          const shareUrl = `${origin}/?story=${encodeURIComponent(post.id)}`;
+          const cleanTitle = (post.title || "").trim().replace(/\s+/g, " ");
+          const cleanExcerpt = (post.excerpt || post.title || "FUNAI campus news, updates and conversations.").trim().replace(/\s+/g, " ");
+          const title = `${cleanTitle} \u2014 FUNAI SPEAKER TV`;
+          const description = cleanExcerpt;
+          const shareUrl = `${origin}/story/${encodeURIComponent(post.id)}`;
           const imageType = imageUrl.toLowerCase().endsWith(".png") ? "image/png" : imageUrl.toLowerCase().endsWith(".webp") ? "image/webp" : "image/jpeg";
           let html = "";
           try {
@@ -23881,7 +23930,7 @@ function createExpressApp() {
           if (!html) {
             html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${escapeHtml(title)}</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>`;
           }
-          html = html.replace(/<title>[\s\S]*?<\/title>/gi, "").replace(/<meta\s+[^>]*?(?:name|property)=["'](?:description|og:[^"']+|twitter:[^"']+)["'][^>]*?>/gi, "");
+          html = html.replace(/<title>[\s\S]*?<\/title>/gi, "").replace(/<meta\s+[^>]*?(?:name|property)=["'](?:description|og:[^"']+|twitter:[^"']+)["'][^>]*?>/gi, "").replace(/<link\s+[^>]*?rel=["']image_src["'][^>]*?>/gi, "");
           const injectedMeta = [
             `<title>${escapeHtml(title)}</title>`,
             `<meta name="description" content="${escapeHtml(description)}">`,
@@ -23895,6 +23944,8 @@ function createExpressApp() {
             `<meta property="og:image:type" content="${imageType}">`,
             `<meta property="og:image:width" content="1200">`,
             `<meta property="og:image:height" content="630">`,
+            `<meta property="og:image:alt" content="${escapeHtml(cleanTitle)}">`,
+            `<link rel="image_src" href="${escapeHtml(imageUrl)}">`,
             `<meta name="twitter:card" content="summary_large_image">`,
             `<meta name="twitter:title" content="${escapeHtml(title)}">`,
             `<meta name="twitter:description" content="${escapeHtml(description)}">`,
