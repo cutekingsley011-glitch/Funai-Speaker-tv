@@ -1,9 +1,14 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 import { db, storage, router as createRouter } from '../lib/appdeploy/sdk.ts';
 import { handler as apiHandler } from './index.ts';
 import { realtimeSubscriptionRoutes } from './realtime-subscribers.ts';
+import embeddedBackup from '../data-backup.json';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 function escapeHtml(str: string): string {
   return String(str || '')
@@ -47,10 +52,15 @@ export function createExpressApp() {
     try {
       const id = req.params.id;
       let post: any = null;
-      try {
-        const resDb = await db.get('posts', [id]);
-        if (resDb && resDb[0]) post = resDb[0];
-      } catch {}
+      if (embeddedBackup && Array.isArray((embeddedBackup as any).posts)) {
+        post = (embeddedBackup as any).posts.find((p: any) => String(p.id) === String(id));
+      }
+      if (!post) {
+        try {
+          const resDb = await db.get('posts', [id]);
+          if (resDb && resDb[0]) post = resDb[0];
+        } catch {}
+      }
       if (!post) {
         try {
           const listDb = await db.list('posts', { limit: 200 });
@@ -196,10 +206,16 @@ export function createExpressApp() {
       try {
         storyId = decodeURIComponent(storyId).split('#')[0].split('?')[0].trim();
         let post: any = null;
-        try {
-          const resDb = await db.get('posts', [storyId]);
-          if (resDb && resDb[0]) post = resDb[0];
-        } catch {}
+        if (embeddedBackup && Array.isArray((embeddedBackup as any).posts)) {
+          post = (embeddedBackup as any).posts.find((p: any) => String(p.id) === String(storyId));
+        }
+
+        if (!post) {
+          try {
+            const resDb = await db.get('posts', [storyId]);
+            if (resDb && resDb[0]) post = resDb[0];
+          } catch {}
+        }
 
         if (!post) {
           try {

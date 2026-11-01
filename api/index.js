@@ -1,3 +1,4 @@
+import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -22706,14 +22707,1409 @@ var require_express2 = __commonJS({
 var import_express2 = __toESM(require_express2(), 1);
 import path2 from "path";
 import fs2 from "fs";
+import { fileURLToPath as fileURLToPath2 } from "url";
 
 // lib/appdeploy/sdk.ts
 var import_express = __toESM(require_express2(), 1);
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+
+// data-backup.json
+var data_backup_default = {
+  posts: [
+    {
+      id: "16beceef-6945-47c6-8c76-1765134417dc",
+      category: "Campus News",
+      views: 0,
+      featured: true,
+      likes: 3,
+      workflow: "published",
+      token: "2493b2a5-c61b-4e96-b6cb-17729d7ad666",
+      time: "2w ago",
+      createdAt: 1790258711636,
+      excerpt: "Updated excerpt",
+      body: "The National Examinations Council (NECO) has released the results of the 2026 Senior School Certificate Examination (SSCE).\n\nA total of 1,378,048 candidates registered for the examination, comprising 682,352 males and 695,696 females.Of the registered candidates, 1,371,992 sat for the examination, including 678,903 males and 693,089 females.\nNECO said 804,948 candidates, representing 58.67 per cent, obtained at least five credits including English Language and Mathematics.\nThe council also disclosed that 1,162,118 candidates, representing 84.70 per cent, obtained five credits and above irrespective of their performance in English Language and Mathematics.",
+      breaking: true,
+      status: "published",
+      imagePath: "uploads/1790258697325-1009630361.png",
+      published: true,
+      title: "FUNAI Campus News & Verified Academic Notices",
+      author: "FSTV Desk",
+      image: "/uploads/post-16beceef-6945-47c6-8c76-1765134417dc.png",
+      comments: 1,
+      comments_list: []
+    },
+    {
+      id: "18178cf9-8032-4338-b57e-c6f8aaab09c7",
+      status: "published",
+      body: "President Bola Ahmed Tinubu\u2019s extended stay abroad has continued to generate debate around constitutional provisions that require the president to transmit power to the vice president if away from the country for more than 21 days or unable to discharge the functions of his office.The president, who was supposed to return to Nigeria on September 20, had extended his \u201Cworking vacation\u201D by a week and the presidency said he would be back in the country over the weekend. But he did not return as promised, raising fresh concerns over the handling of his whereabouts.The Centre for Democracy and Development (CDD) had urged Nigerians to seek judicial interpretation of President Tinubu\u2019s prolonged absence from the country, saying citizens have the right to challenge actions they believe violate the Constitution.\n\nThe Director of CDD-West Africa, Dr Dauda Garuba, said although the president had the right to travel and extend his stay, he was expected to take the provisions of the Constitution into consideration when determining the duration of his absence.",
+      views: 1,
+      createdAt: 1790587451743,
+      likes: 0,
+      workflow: "published",
+      featured: true,
+      token: "c4192c46-5edf-4953-a34d-16aab72f447e",
+      image: "/uploads/post-18178cf9-8032-4338-b57e-c6f8aaab09c7.png",
+      breaking: true,
+      excerpt: "President Bola Ahmed Tinubu\u2019s extended stay abroad has continued to generate debate around constitutional provisions that require the president to transmit power to the vice president if away from the country for more than 21 days or unable to discharge the functions of his office.",
+      time: "1w ago",
+      published: true,
+      author: "FSTV Desk",
+      imagePath: "uploads/1790587446323-1009682685.png",
+      comments: 0,
+      title: "Nigerians troubled and worried while some even lose appetite as President tinubu postpones return",
+      category: "Breaking News",
+      comments_list: []
+    },
+    {
+      id: "1ad14743-7bd4-4be9-b0e0-ec9452aa165a",
+      comments: 0,
+      time: "4w ago",
+      breaking: true,
+      status: "published",
+      excerpt: 'British-Nigerian businessman and influencer Igho "Tiny" Ubiribo died at age 43 following a fatal embolism caused by a penis enlargement procedure in Thailand',
+      createdAt: 1788630524031,
+      body: `British-Nigerian businessman and influencer Igho "Tiny" Ubiribo died at the age of 43 in Bangkok, Thailand, following a severe pulmonary embolism caused by cosmetic filler material entering his lungs during a non-surgical procedure. Prior to his death, Ubiribo and his wife, Zimbabwean fashion mogul Danielle Simba Allen, were wanted by Nigeria's National Drug Law Enforcement Agency in connection with an international drug trafficking investigation.`,
+      likes: 2,
+      published: true,
+      workflow: "published",
+      author: "FSTV Desk",
+      imagePath: "uploads/1788630506671-1009401709.png",
+      title: "Influencer Dies Penis Enlargement Surgery Gone Wrong",
+      category: "Opinion",
+      token: "e6d71d37-2ec5-49dd-88e7-6eae4d3240e3",
+      image: "/uploads/post-1ad14743-7bd4-4be9-b0e0-ec9452aa165a.png",
+      views: 5,
+      featured: true,
+      comments_list: []
+    },
+    {
+      id: "2d9bd427-6bba-4b90-9d0a-c22810d3e117",
+      breaking: true,
+      token: "57ca8fa1-c7ba-49a3-beb7-6df3d93737c2",
+      imagePath: "uploads/1788121153171-1009315587.png",
+      workflow: "published",
+      status: "published",
+      body: "President Tinubu Reportedly Asks Court To Stop FBI, DEA From Releasing Records Linked To Her%in Tr@fficking Allegations\n\n\n\nThe case also concerns records allegedly connected to a 1993 civil forfeiture proceeding involving about $460,000 linked to Tinubu. Tinubu has denied wrongdoing.\n\nIn a 16-page court document filed by his legal team and shared with Channels Television Saturday, Tinubu argued that releasing the records could violate his privacy.\n\nHis lawyers said information disclosed during the forfeiture proceeding did not reveal details or outcome of any possible criminal investigation. They said Greenspan sought the records because the information is unavailable, and public disclosure of some details does not eliminate Tinubu\u2019s privacy interest in undisclosed portions.\n\nThey cited the Supreme Court\u2019s Reporters Committee precedent, saying individuals can retain privacy interests in government records even when portions were public.\nThey also referenced a 2012 Judicial Watch decision involving the DOJ, arguing that people can retain privacy interests in investigative information even when publicly linked to criminal activity.\nAnother case involving the Electronic Privacy Information Center and the DOJ was cited to argue that being investigated is separate from the investigation\u2019s contents.\n\n\u201CRegardless of the prior disclosure in the forfeiture proceeding, Intervenor retains a privacy interest in potential disclosure of the investigative files sought by Plaintiff,\u201D the document stated.\n\nThe dispute centres on whether the US government should release the investigative records, with Tinubu seeking to prevent disclosure on privacy grounds.",
+      time: "Aug 30, 2026",
+      createdAt: 1788121159934,
+      views: 1,
+      category: "News",
+      title: "President Bola Tinubu has asked a US court to stop DOJ, FBI and DEA from releasing his her%in related records",
+      featured: true,
+      image: "/uploads/post-2d9bd427-6bba-4b90-9d0a-c22810d3e117.png",
+      excerpt: "President Bola Tinubu has asked a US court to stop DOJ, FBI and DEA from releasing records on past investigations.\nThe development follows a FOIA lawsuit by transparency activist Aaron Greenspan, seeking Tinubu investigation documents. His requests include the FBI file on Tinubu and Form 302 interview records from 1992 to 1993.",
+      likes: 2,
+      author: "FSTV Desk",
+      comments: 0,
+      published: true,
+      comments_list: []
+    },
+    {
+      id: "2f3a7314-3ee9-43a5-abf2-b599c090d24b",
+      author: "FSTV Desk",
+      published: true,
+      breaking: true,
+      status: "published",
+      time: "2w ago",
+      token: "6a03fc47-2c7b-4f2d-9af6-138ae95c74d3",
+      category: "Breaking News",
+      excerpt: "Former Liverpool footballer Mohamed Salah has been banned from driving for six months after his Rolls-Royce was clocked speeding.",
+      body: "Salah failed to tell police who was at the wheel when the car was caught by a speed camera driving at 36mph (58 km/h) on a 30mph (48km/h) stretch of road in Wilmslow, Cheshire, on 27 March, according to court documents.\n\nThe 34-year-old did not respond to the notice of the prosecution, brought by Cheshire Police, and did not enter a plea to the charge.\n\nHe was handed a six-month driving ban and ordered to pay \xA31,044 in a hearing at Warrington Combined Court.\n\nA court spokeswoman said Salah was prosecuted under the Single Justice Procedure, which sees magistrates sit in private hearings, and was convicted of failing to give information relating to the identification of the driver of the Rolls-Royce.",
+      title: "MOHAMMED SALAH FACES DRIVING BAN",
+      views: 0,
+      createdAt: 1790071806525,
+      comments: 0,
+      featured: true,
+      imagePath: "uploads/1790071769535-1009602031.png",
+      image: "/uploads/post-2f3a7314-3ee9-43a5-abf2-b599c090d24b.png",
+      likes: 0,
+      workflow: "published",
+      comments_list: []
+    },
+    {
+      id: "658d3c35-0b94-497c-ac38-d33b66ba0327",
+      featured: true,
+      token: "75ab2f3b-e7fe-4a96-926d-182abd1a55e7",
+      time: "3w ago",
+      likes: 1,
+      comments: 0,
+      title: "IF YOU FILM FOR \u20A65M AFRICAN MAGIC PAYS YOU \u20A61.5M",
+      workflow: "published",
+      breaking: true,
+      excerpt: "Nollywood actor, director and producer Ugezu J Ugezu has criticized what he described as unfavorable payment and exclusivity terms offered to filmmakers by Africa Magic.",
+      image: "/uploads/post-658d3c35-0b94-497c-ac38-d33b66ba0327.png",
+      status: "published",
+      author: "FSTV Desk",
+      imagePath: "uploads/1789451462541-1009514211.png",
+      category: "Entertainment",
+      published: true,
+      createdAt: 1789451473307,
+      body: "Nollywood actor, director and producer Ugezu J Ugezu has criticized what he described as unfavorable payment and exclusivity terms offered to filmmakers by Africa Magic. \n\u201CWhat they offer most of the times is nothing to write home about,\u201D Ugezu said. \u201CIf you film for like \u20A65 million and they watch the movie, the highest they can say they pay you \u20A61.5 million.\u201D\nSpeaking on GBAM, Ugezu claimed that producers could spend about \u20A65 million making a film, only for the platform to offer around \u20A61.5 million for it while requiring that the movie not be shown elsewhere.",
+      views: 0,
+      comments_list: []
+    },
+    {
+      id: "65f12809-5db7-4765-83fd-ca4d364a3ccd",
+      comments: 0,
+      views: 1,
+      author: "FSTV Desk",
+      breaking: true,
+      likes: 1,
+      status: "published",
+      category: "Sports",
+      featured: true,
+      published: true,
+      imagePath: "uploads/1788199626845-1009334720.png",
+      excerpt: "Lionel Messi has announced his retirement from international football, bringing an emotional 20-year chapter with Argentina to a close just one month after the 2026 World Cup final and weeks after the death of his father.*",
+      time: "Aug 31, 2026",
+      image: "/uploads/post-65f12809-5db7-4765-83fd-ca4d364a3ccd.png",
+      title: "FOOTBALL LEGEND LIONEL ANDR\xC9S MESSI DROPS BOMBSHELL ON RETIREMENT",
+      createdAt: 1788199636807,
+      body: `After 20 years, Lionel Messi has retired from the Argentina national team.
+
+The 39-year-old announced it on Instagram today. "It hurts to my core, but it's the right time," he wrote. "I gave everything for this jersey."
+He drafted the message after the 2026 World Cup final loss to Spain, and decided to post it after his dad Jorge passed away.
+
+Messi leaves as Argentina\u2019s top scorer: 125 goals in 207 games. World Cup 2022 winner + 2x Copa America champion.
+He\u2019s NOT retiring from football, he\u2019ll keep playing for Inter Miami. 
+"Now I\u2019ll cheer from the sidelines. Thank you. \xA1Vamos Argentina!"
+An era ends \u{1F494}`,
+      token: "6eda7140-1c9a-4e27-a6ce-f3d38e8a5729",
+      workflow: "published",
+      comments_list: []
+    },
+    {
+      id: "7b85396f-9a77-4028-ab02-205c7e38a2db",
+      image: "/uploads/post-7b85396f-9a77-4028-ab02-205c7e38a2db.png",
+      breaking: true,
+      featured: true,
+      likes: 1,
+      author: "FSTV Desk",
+      title: "OPAY DEBUNKS INDEFINITE SHUTDOWN RUMOR CIRCULATING IN THE MEDIA SPACE",
+      views: 2,
+      workflow: "published",
+      time: "Aug 31, 2026",
+      published: true,
+      category: "Breaking News",
+      status: "published",
+      createdAt: 1788191815316,
+      imagePath: "uploads/1788191808242-1009332947.png",
+      token: "dd9f4ad9-1de9-4d4a-b405-7e223133e9aa",
+      comments: 0,
+      excerpt: "Leading  fintech company, OPay Digital Services, has dismissed as false and malicious a viral social media publication claiming that the company would embark on a prolonged break from September 1, 2026, urging its customers to withdraw or move their funds.",
+      body: "Leading  fintech company, OPay Digital Services, has dismissed as false and malicious a viral social media publication claiming that the company would embark on a prolonged break from September 1, 2026, urging its customers to withdraw or move their funds. \nThe fabricated publication, which gained traction across social media platforms on Sunday, purportedly warned OPay customers that the fintech would shut down its operations for an extended period beginning September 1.\n\nHowever, OPay, in an official response published across its verified social media platforms, described the claim as false, assuring customers that the company remains fully operational.\n\nIn a statement titled, \u2018This is FALSE,\u2019 the fintech said: \u201COPay is not going on break by September. We\u2019re here, and we\u2019re going nowhere!\u201D",
+      comments_list: []
+    },
+    {
+      id: "a6eda3d0-66fa-459b-b863-25b474f5af5c",
+      image: "/uploads/post-a6eda3d0-66fa-459b-b863-25b474f5af5c.jpg",
+      featured: true,
+      comments: 0,
+      workflow: "published",
+      author: "FSTV Desk",
+      imagePath: "uploads/1789586648299-1009536698.jpg",
+      published: true,
+      title: "NIGERIANS ARE NOW BEGGING ME TO SLOW DOWN",
+      body: "Minister of Power, Joseph Tegbe, on Wednesday said some electricity consumers had asked him to \u201Cslow down\u201D with ongoing improvements in power supply, joking that their freezers were now working continuously.\n\nTegbe disclosed this in Abuja at the commissioning of the 3-megawatt solar hybrid power project at Yakubu Gowon University, formerly the University of Abuja.\n\nAccording to the minister, consumers in some parts of the country had begun experiencing significant improvements in electricity supply following recent interventions by the Federal Government",
+      token: "637ba7af-d0ba-4b97-871d-4695d6a3c5ef",
+      createdAt: 1789586658352,
+      time: "3w ago",
+      excerpt: "Minister of Power, Joseph Tegbe, on Wednesday said some electricity consumers had asked him to \u201Cslow down\u201D with ongoing improvements in power supply, joking that their freezers were now working continuously.",
+      category: "Breaking News",
+      views: 0,
+      breaking: true,
+      likes: 0,
+      status: "published",
+      comments_list: []
+    },
+    {
+      id: "b8ca3458-0aee-47e4-beea-bb396c8f9607",
+      author: "FSTV Desk",
+      image: "/uploads/post-b8ca3458-0aee-47e4-beea-bb396c8f9607.png",
+      time: "4w ago",
+      body: "The CEO FunaispeakerTv on the early hours of Wednesday September 9th endorsed XB XCHANGE as a legit vendor who can be trusted with various crypto deals and foreign transfers.\nHe can be contacted on Whatsapp with \nwa.me/+2349058568746\nASK OF XB_XCHANGE \n TRANSACTION \u{1F4B0}\n    PAYMENT \u{1F680}\n    \u{1F4BB}24/7 Active\n* PICK UP INFO'S \u{1F3F7}\uFE0F\n* GIFTCARDS \u{1F4B3}\n* * CRYPTO/BTC \u{1FA99}/USDT\n* BANKS \u{1F3E6} \u{1F1EC}\u{1F1E7} \u{1F1FA}\u{1F1F8} \u{1F1EA}\u{1F1FA}\nwa.me/+2349058568746",
+      featured: true,
+      imagePath: "uploads/1788971979867-1009449880.png",
+      workflow: "published",
+      category: "Lifestyle",
+      published: true,
+      comments: 0,
+      likes: 1,
+      title: "XB XCHANGE ENDORSED",
+      breaking: true,
+      createdAt: 1788972436443,
+      excerpt: "CEO FunaispeakerTv endorses XB XCHANGE",
+      token: "6049da2e-3a38-4d14-ad20-941681fbce3d",
+      views: 1,
+      status: "published",
+      comments_list: []
+    },
+    {
+      id: "c7ec9e39-8906-43cc-a33c-f9323b756148",
+      featured: true,
+      views: 2,
+      status: "published",
+      excerpt: "Barcola has signed a five-year contract and becomes Liverpool\u2019s fifth new arrival of the summer, following Victor Munoz, Jeremy Jacquet, Ronald Araujo and Ifeanyi Ndukwe.",
+      workflow: "published",
+      author: "FSTV Desk",
+      time: "Aug 31, 2026",
+      published: true,
+      title: "BRADLEY BARCOLA SIGNS A 5 YEAR CONTRACT WITH LIVERPOOL FC",
+      comments: 0,
+      breaking: false,
+      body: "Liverpool have completed the signing of France forward Bradley Barcola from Paris Saint-Germain in a deal worth up to \xA3123 million, strengthening their squad ahead of the new Premier League season.\n\nThe transfer was confirmed by BBC Sport, with Liverpool paying an initial \xA3106 million plus \xA317 million in potential add-ons for the 23-year-old.\nBarcola has signed a five-year contract and becomes Liverpool\u2019s fifth new arrival of the summer, following Victor Munoz, Jeremy Jacquet, Ronald Araujo and Ifeanyi Ndukwe.",
+      imagePath: "uploads/1788184977629-1009331372.png",
+      likes: 1,
+      token: "9950be72-e1c5-42b4-85c4-de128e078afb",
+      image: "/uploads/post-c7ec9e39-8906-43cc-a33c-f9323b756148.png",
+      createdAt: 1788184990855,
+      category: "Sports",
+      comments_list: []
+    },
+    {
+      id: "d08c15cc-740e-4278-9321-aa9da55b81fb",
+      image: "/uploads/post-d08c15cc-740e-4278-9321-aa9da55b81fb.png",
+      author: "FSTV Desk",
+      token: "b40d8c02-64ac-4b31-b516-9c8fb9cd0c65",
+      featured: true,
+      workflow: "published",
+      time: "Sep 4, 2026",
+      views: 0,
+      published: true,
+      createdAt: 1788517369734,
+      breaking: true,
+      likes: 1,
+      body: "The Yobe State Chairman of the All Progressives Congress (APC), Alhaji Mohammed Gadaka, has urged married women to divorce their husbands if they refuse to allow them to vote for the APC in the upcoming general elections. \n\nGadaka made the remark while speaking in Nangere town on Thursday, where he received hundreds of defectors into the party.\n\nHe pledged to pay the \u201Cnew bride price\u201D of any woman who left her marriage over allegiance to the party.The comment has sparked outrage across the state, with many residents, including Islamic scholars, describing it as reckless, provocative and capable of undermining family values.",
+      imagePath: "uploads/1788517365680-1009384028.png",
+      title: "Divorce your husband's I will marry you",
+      excerpt: "The Yobe State Chairman of the All Progressives Congress (APC), Alhaji Mohammed Gadaka, has urged married women to divorce their husbands if they refuse to allow them to vote for the APC in the upcoming general elections.",
+      category: "Breaking News",
+      comments: 0,
+      status: "published",
+      comments_list: []
+    },
+    {
+      id: "d7e0a101-8de4-4ef8-88d8-0fc942bf328b",
+      image: "/uploads/post-d7e0a101-8de4-4ef8-88d8-0fc942bf328b.png",
+      author: "FSTV Desk",
+      likes: 1,
+      token: "5568a698-7075-4e87-8f87-e2708a3c0bbe",
+      imagePath: "uploads/1789987312508-1009590499.png",
+      body: "In a city filled with different works and talents, entrepreneurs rising here and there, the man LARRYXCHANGE has proven to be an epitome of trustworthiness and sincerity. His pattern of business remains transparent up till date.\nIn view of all these Trade with D'LARRYXCHANGE today https://Wa.me/+2347051809899",
+      comments: 0,
+      excerpt: "In a city filled with different works and talents, entrepreneurs rising here and there, the man LARRYXCHANGE has proven to be an epitome of trustworthiness and sincerity. His pattern of business remains transparent up till date.",
+      status: "published",
+      createdAt: 1789987320402,
+      category: "Opinion",
+      breaking: true,
+      featured: true,
+      workflow: "published",
+      time: "2w ago",
+      published: true,
+      title: "Larry Xchange  Receives endorsement from the CEO FunaispeakerTv",
+      views: 0,
+      comments_list: []
+    },
+    {
+      id: "d922681e-0a33-4963-a190-714733056422",
+      published: true,
+      likes: 0,
+      status: "published",
+      category: "Lifestyle",
+      image: "/uploads/post-d922681e-0a33-4963-a190-714733056422.png",
+      workflow: "published",
+      views: 2,
+      comments: 0,
+      breaking: true,
+      token: "34d73d18-e189-4d7f-b837-ca74b306d4d2",
+      excerpt: "The transportation company SANCHI EXPRESS LIFT has visibly shown great impact and has added more competition to the transportation market.  We are looking at seeing them at the top in the coming years.",
+      featured: true,
+      createdAt: 1789682210241,
+      time: "3w ago",
+      title: "sanchi Express Lift dominating the East and making visible impacts on the nation.",
+      imagePath: "uploads/1789681909396-1009551358.png",
+      author: "FSTV Desk",
+      body: "Sanchi Express Lift is owned and managed by a young billionaire entrepreneur Nnanta Onyedika Padropio A.K.A Sanchi Money. \nSanchi Express Lift like other transport services grew from a single vehicle to fleet of vehicles.\n\nThe transportation company SANCHI EXPRESS LIFT has visibly shown great impact and has added more competition to the transportation market.  We are looking at seeing them at the top in the coming years.",
+      comments_list: []
+    },
+    {
+      id: "d93704ab-5c17-4709-bf47-65e960834aa5",
+      body: "American rapper Cardi B has seemingly hinted that fans could see more of Nigerian footballer Maduka Okoye as dating rumours surrounding the pair continue to grow.\nThe rapper, who is currently featured on the cover of Vogue Arabia, opened up about her music, motherhood and love life following her divorce, with her recent outings with Okoye also coming up during the interview.\nCardi and the 27-year-old Udinese goalkeeper first sparked romance speculation after they were spotted together at Paris Fashion Week in July. The footballer was seen helping Cardi get settled into her seat before sitting beside her as they watched the fashion show.\n\nSpeaking about Okoye, Cardi described him as \u201Creally sweet\u201D and \u201Cvery kind,\u201D noting that although he appears \u201Cvery strict\u201D and \u201Cstern\u201D on social media, he is different in person.\nWhen asked if fans should expect to see more of the Nigerian footballer, Cardi responded with a giggle, \u201CI hope so.\u201D\n\nNeither Cardi nor Okoye has publicly confirmed the nature of their relationship, but the rapper\u2019s latest comments have only added to speculation that something could be developing between them.",
+      author: "FSTV Desk",
+      image: "/uploads/post-d93704ab-5c17-4709-bf47-65e960834aa5.png",
+      title: "He was really sweet....i hope so - cardi B speaks on super eagles goalkeeper maduka okoye",
+      createdAt: 1787928092891,
+      breaking: false,
+      category: "News",
+      featured: true,
+      published: true,
+      time: "Aug 28, 2026",
+      views: 7,
+      excerpt: "Cardi B has been pretty open about the fact that she is not planning to stay single forever, When asked if fans would be seeing more of Maduka Okoye, the 27-year-old Nigerian goalkeeper who caught her eye at Paris Couture Week, Cardi giggled and said, \u201CI hope so.\u201D",
+      comments: 0,
+      workflow: "published",
+      token: "b949ae33-56be-45f6-8dca-bd0492e725ac",
+      likes: 2,
+      status: "published",
+      comments_list: [],
+      imagePath: "uploads/post-d93704ab-5c17-4709-bf47-65e960834aa5.png"
+    },
+    {
+      id: "e234e1bb-ab1b-4666-b4f5-227059001280",
+      image: "/uploads/post-e234e1bb-ab1b-4666-b4f5-227059001280.png",
+      featured: true,
+      comments: 0,
+      workflow: "published",
+      author: "FSTV Desk",
+      imagePath: "uploads/1789554907493-1009530683.png",
+      published: true,
+      title: "Veteran actor Olu Jacobs dies at 84",
+      body: "Veteran Nigerian actor and film executive, Oludotun Baiyewu Jacobs, popularly known as Olu Jacobs, has died at the age of 84.\n\nHis death was announced by his son, Olusoji Jacobs, on Instagram on Wednesday.\n\nIn the statement, the family described the late actor as \u201CThe Lion of Lufodo\u201D and asked bloggers and social media influencers to respect its privacy.\n\n\u201CIt is with gratitude to God for a life well lived and fought, that we announce the passing of our dear husband, father, grandfather and uncle. The Lion of Lufodo.",
+      token: "a6a0de73-a68a-4bbe-9eb8-31c9c2ee6cbd",
+      createdAt: 1789554926324,
+      time: "3w ago",
+      excerpt: "Veteran Nigerian actor and film executive, Oludotun Baiyewu Jacobs, popularly known as Olu Jacobs, has died at the age of 84.",
+      category: "Breaking News",
+      views: 0,
+      breaking: true,
+      likes: 0,
+      status: "published",
+      comments_list: []
+    },
+    {
+      id: "f1039924-b7cc-499d-97f4-cfe6f5518c4c",
+      createdAt: 1789034559702,
+      token: "c225631b-c29d-4319-969a-d425eb286ddf",
+      imagePath: "uploads/1789034555477-1009457771.png",
+      comments: 0,
+      image: "/uploads/post-f1039924-b7cc-499d-97f4-cfe6f5518c4c.png",
+      excerpt: "If Nigerians can't see all the good things I have done for them, we will get them eyeglasses because they have eye problem- President tinubu",
+      status: "published",
+      body: `While meeting with leaders and coordinators of the Renewed Hope Ambassadors at the State House in Abuja, the President remarked, "If Nigerians can't see all the good things I have done for them, we'll give them eyeglasses because they have eye problems." 
+
+He pointed to ongoing infrastructure projects (like roads and bridges), a growing economy, and investments in children and education as clear signs of development. `,
+      published: true,
+      views: 1,
+      likes: 1,
+      title: "WE'LL GIVE THEM GLASSES BECAUSE THEY HAVE EYE PROBLEM",
+      category: "Breaking News",
+      workflow: "published",
+      author: "FSTV Desk",
+      featured: true,
+      time: "4w ago",
+      breaking: true,
+      comments_list: []
+    },
+    {
+      id: "fa284f25-71de-4116-9515-8f1bd7b33f00",
+      category: "Campus News",
+      title: "FunaispeakerTv live on Google",
+      token: "9607baeb-03ff-48ae-a36d-5a125f944e5d",
+      author: "FSTV Desk",
+      excerpt: "The official website for FunaispeakerTv has been launched today",
+      status: "published",
+      createdAt: 1787865489317,
+      featured: true,
+      workflow: "published",
+      time: "Aug 27, 2026",
+      comments: 3,
+      published: true,
+      image: "/uploads/post-fa284f25-71de-4116-9515-8f1bd7b33f00.png",
+      body: "The CEO FunaispeakerTv has successfully launched his website today being the 27th of August 2026. The website was launched around 9:30pm. Students are advised to visit https://www.funaispeakertv.com to access the website ",
+      breaking: true,
+      likes: 7,
+      views: 20,
+      comments_list: [
+        {
+          id: "2b056fff-e057-4886-8f63-4c2f83e363ef",
+          createdAt: 1787866166914,
+          name: "Uchenna",
+          postId: "fa284f25-71de-4116-9515-8f1bd7b33f00",
+          text: "This is beautiful. Easy to navigate and not complexity",
+          time: "Aug 27, 2026",
+          likes: 0,
+          status: "visible"
+        },
+        {
+          id: "a34601c4-e7ea-4917-94b1-36a0e4da4920",
+          createdAt: 1787902375725,
+          name: "Alaoma Esther",
+          postId: "fa284f25-71de-4116-9515-8f1bd7b33f00",
+          text: "This is really good. I love it \u{1F497}",
+          time: "Aug 28, 2026",
+          likes: 0,
+          status: "visible"
+        },
+        {
+          id: "ab63aff5-8d77-4779-9003-17c9412aeb7f",
+          createdAt: 1787866166917,
+          name: "Uchenna",
+          postId: "fa284f25-71de-4116-9515-8f1bd7b33f00",
+          text: "This is beautiful. Easy to navigate and not complexity",
+          time: "Aug 27, 2026",
+          likes: 0,
+          status: "visible"
+        }
+      ],
+      imagePath: "uploads/post-fa284f25-71de-4116-9515-8f1bd7b33f00.png"
+    },
+    {
+      id: "fafed88d-127f-43c3-ab3c-047441281754",
+      token: "0873e238-ea8a-4620-bfcd-de40b5867531",
+      published: true,
+      excerpt: "Sainna Buba, the Borno State Commissioner for Youth and Sports Development, has sparked widespread concern after threatening political opponents with physical harm and state-backed punishment if they fail to support the ruling All Progressives Congress (APC).",
+      featured: true,
+      comments: 0,
+      category: "News",
+      image: "/uploads/post-fafed88d-127f-43c3-ab3c-047441281754.png",
+      status: "published",
+      views: 0,
+      createdAt: 1788274183485,
+      imagePath: "uploads/1788274177335-1009345937.png",
+      body: "Addressing the gathering, the commissioner issued a stern warning to critics and opposition figures, using violent imagery to caution against political dissent.\n\n\u201CWhoever shows us a finger, we are ready to cut off his fingers,\u201D Buba stated, adding, \u201CWe are now playing politics. Whoever shows us a finger, we will show him a finger\u2026 Whoever dares to show us a finger again, we will break his finger.\u201D\n\n\u201CThe government is our government. Those who follow us will enjoy the honey; if you refuse, then you will be flogged,\u201D he said.",
+      time: "Sep 1, 2026",
+      breaking: false,
+      likes: 1,
+      title: "They will be flogged, we will cut of their fingers",
+      author: "FSTV Desk",
+      workflow: "published",
+      comments_list: []
+    },
+    {
+      title: "Community Gist",
+      excerpt: "Hot gist from campus",
+      body: "Hot gist from campus",
+      category: "Gist",
+      author: "Anonymous Community",
+      time: "Just now",
+      likes: 0,
+      comments: 0,
+      views: 0,
+      image: "",
+      gistStyle: "hot",
+      published: true,
+      featured: false,
+      breaking: false,
+      id: "id_1792259711023_d67da0t"
+    },
+    {
+      title: "Community Gist",
+      excerpt: "A student lost an ID card around Faculty of Science",
+      body: "A student lost an ID card around Faculty of Science",
+      category: "Gist",
+      author: "Anonymous Community",
+      time: "Just now",
+      likes: 0,
+      comments: 0,
+      views: 0,
+      image: "",
+      gistStyle: "hot",
+      published: true,
+      featured: false,
+      breaking: false,
+      id: "id_1792259957475_fllu2xz"
+    },
+    {
+      title: "VC Inspects Modernized ICT Facility on FUNAI Campus",
+      excerpt: "The Vice Chancellor led key administrative heads on a comprehensive assessment tour of the newly upgraded campus ICT hub today.",
+      body: "The Vice Chancellor led key administrative heads on a comprehensive assessment tour of the newly upgraded campus ICT hub today.",
+      category: "Campus News",
+      author: "FSTV Desk",
+      workflow: "published",
+      token: "fstv-adm-1792260719955-9fce5263-4bd1-4990-9fec-64f7cbab69ad",
+      image: "",
+      imagePath: "",
+      time: "Just now",
+      createdAt: 1792260719963,
+      likes: 1,
+      comments: 2,
+      views: 0,
+      published: true,
+      status: "published",
+      id: "id_1792260719963_qewae4f"
+    },
+    {
+      title: "Huge turnout at the engineering faculty quadrangle for the i...",
+      excerpt: "Huge turnout at the engineering faculty quadrangle for the inter-departmental quiz championship! Spirits are high.",
+      body: "Huge turnout at the engineering faculty quadrangle for the inter-departmental quiz championship! Spirits are high.",
+      category: "Gist",
+      author: "Anonymous Community",
+      time: "Just now",
+      createdAt: 1792260719972,
+      likes: 0,
+      comments: 0,
+      views: 0,
+      image: "",
+      gistStyle: "hot",
+      published: true,
+      featured: false,
+      breaking: false,
+      id: "id_1792260719972_mhn9ux7"
+    },
+    {
+      title: "This is a hot campus gist about the upcoming exams and event...",
+      excerpt: "This is a hot campus gist about the upcoming exams and events!",
+      body: "This is a hot campus gist about the upcoming exams and events!",
+      category: "Gist",
+      author: "Anonymous Community",
+      time: "Just now",
+      createdAt: 1792412087132,
+      likes: 0,
+      comments: 0,
+      views: 0,
+      image: "",
+      gistStyle: "hot",
+      published: true,
+      featured: false,
+      breaking: false,
+      id: "id_1792412087132_0hoxozt"
+    },
+    {
+      title: "Test Story with Image",
+      body: "This is the story body text",
+      category: "Campus News",
+      author: "FSTV Newsroom",
+      image: "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+      excerpt: "This is the story body text",
+      imagePath: "",
+      time: "Just now",
+      createdAt: 1792697982710,
+      likes: 0,
+      comments: 0,
+      views: 0,
+      published: true,
+      status: "published",
+      id: "id_1792697982710_s05pt1a"
+    }
+  ],
+  polls: [
+    {
+      id: "69bbcc97-e782-4e4f-8491-cfeebcfe162b",
+      options: [
+        {
+          label: "Campus news",
+          votes: 48
+        },
+        {
+          votes: 25,
+          label: "Student gist"
+        },
+        {
+          votes: 15,
+          label: "Events"
+        },
+        {
+          label: "Interviews",
+          votes: 13
+        }
+      ],
+      question: "What should FUNAI SPEAKER TV cover more?"
+    },
+    {
+      id: "73d61fdb-e6db-479f-9a50-874d5be39b4b",
+      active: true,
+      options: [
+        {
+          label: "Omo",
+          votes: 67
+        },
+        {
+          label: "Splendid",
+          votes: 33
+        },
+        {
+          votes: 0,
+          label: "Bad"
+        }
+      ],
+      question: "How's your exam going??"
+    },
+    {
+      id: "d777378e-fa04-4ffb-a60a-831064135e70",
+      question: "What should FUNAI SPEAKER TV cover more?",
+      options: [
+        {
+          votes: 48,
+          label: "Campus news"
+        },
+        {
+          label: "Student gist",
+          votes: 27
+        },
+        {
+          votes: 16,
+          label: "Events"
+        },
+        {
+          votes: 10,
+          label: "Interviews"
+        }
+      ]
+    }
+  ],
+  events: [
+    {
+      id: "923e5517-7e03-4002-80bb-c16db752fa63",
+      date: "2026-08-29",
+      description: "A starter event ready for the newsroom to replace with a real campus event.",
+      location: "FUNAI Campus",
+      time: "16:00",
+      title: "FUNAI Campus Community Meetup"
+    },
+    {
+      id: "9520ccb4-af0b-481a-97b7-528abe68f595",
+      date: "2026-11-25",
+      description: "A simple Charity event for students",
+      image: "https://appdeployai-v2-storage.s3.us-east-1.amazonaws.com/funai-speaker-tv-ap7kia/uploads/1787657012555-1009241858.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAYJE2XSHQIYN2FOLW%2F20260825%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260825T112332Z&X-Amz-Expires=699&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEDwaCXVzLWVhc3QtMSJHMEUCIQDEXb558G2fPpo0E3SaRif7soi6iIHO61MJXtCpkRnSDgIgBmWdPqfBG7MQKD0oF39pobpUKtAWTx6z24tdXLQny0Eq0wIIBBAAGgw1Njk0MDc2NzI4MDAiDK2bWIf1hZ1z1idicyqwAgzBi7BepILjEjEKTjcZ23NcAlBvjp%2FmNNMqug37mPU0aFcW9sV1cuCEthAzdM9mozjDJUM5Q2xjddnh%2BTfAS9GrgZoQl8235TrC%2BSnPssZ98nGTWnWzd9W%2BfxR85N2ZCzmHKQEwqQzQZyGtiqxXlXFX%2FVS%2FM%2Bw3XfX%2FPA9uXisV4ZVadvJ9WoDB7ZnT8tJBxdIFV2e0G0oVYF8qgul%2B2fK%2B03uD8hK6KSqbeeUuowFIsX%2Fnj143CLLxCnbkkyZtDP0hdx8J3PsgZ64aKWZ94Vl%2FpklAxgtKjDeRLQ0RkSRVSIKwU9QZvhKrbhfbRiy50QPLvNxdOOWfpQJXVjaMqHytO79xe%2Fqeyad3jSIOFYIl7keW6TJDgy7aTDfJ%2F%2Bn%2BU0ZaHmtL%2FjJ3M2oMXPd046Aw7PS11AY6nQHwJ75b8YCXOVMHdYDU8FydS4q6ntoNtMBpL5ilZqPrx5byYdic97Fz3bQAX8JqtJB4HxgRKVxhp7qcuVZKgEnYo%2F8NdA%2Frp%2FEjaX0ARNjJU4HI%2FgfibWZfUu0ow4LwgkwGFtsIwU1ucCyjomC33m4ChxuueFMt7a6pTwOn2eSceqBSSRtR3ecNkaeGgQJQGdfH1DiHKTSvHc3L%2FOob&X-Amz-Signature=e7c3401225a892efbb4de2e4e48b270548e7850a1a64c2d1d85421514d72c68a&X-Amz-SignedHeaders=host&response-cache-control=max-age%3D2592000&x-amz-checksum-mode=ENABLED&x-id=GetObject",
+      location: "AE-FUNAI School field",
+      time: "13:24",
+      title: "OPERATION FEED"
+    }
+  ],
+  authors: [
+    {
+      id: "auth_001_fstv",
+      name: "FSTV Desk",
+      bio: "The official editorial team and central newsroom desk of FUNAI SPEAKER TV."
+    },
+    {
+      id: "auth_002_kingsley",
+      name: "Kingsley",
+      bio: "Lead Editor, Founder and Director of FUNAI SPEAKER TV media network."
+    },
+    {
+      id: "auth_003_alaoma",
+      name: "Alaoma Esther",
+      bio: "Campus Life, Entertainment and Student Culture Correspondent."
+    },
+    {
+      id: "auth_004_reporter",
+      name: "Campus Reporter",
+      bio: "On-ground student correspondent covering daily faculty events and updates."
+    }
+  ],
+  members: [
+    {
+      id: "mem_001_kingsley",
+      name: "Kingsley",
+      email: "cutekingsley011@gmail.com",
+      role: "Executive Admin / Lead Director",
+      department: "Mass Communication",
+      faculty: "Faculty of Humanities",
+      status: "Executive",
+      joinedAt: 178786e7,
+      joinedDate: "2026-08-27T18:00:00.000Z",
+      visitorKey: "fstv-admin-kingsley",
+      notes: "Founder & Executive Director of FUNAI SPEAKER TV"
+    },
+    {
+      id: "mem_002_alaoma",
+      name: "Alaoma Esther",
+      email: "estheralaoma@gmail.com",
+      role: "Co-Editor / Campus Life Desk",
+      department: "English & Literary Studies",
+      faculty: "Faculty of Humanities",
+      status: "Executive",
+      joinedAt: 17879e8,
+      joinedDate: "2026-08-28T05:00:00.000Z",
+      visitorKey: "fstv-member-alaoma",
+      notes: "Senior Editorial Contributor & Content Curator"
+    },
+    {
+      id: "mem_003_uchenna",
+      name: "Uchenna",
+      email: "uchenna.funai@gmail.com",
+      role: "Senior Campus Member",
+      department: "Computer Science",
+      faculty: "Faculty of Science",
+      status: "Formal Member",
+      joinedAt: 1787866e6,
+      joinedDate: "2026-08-27T19:40:00.000Z",
+      visitorKey: "fstv-member-uchenna",
+      notes: "Active campus reviewer and platform contributor"
+    },
+    {
+      id: "mem_004_chinedu",
+      name: "Chinedu Okafor",
+      email: "chinedu.okafor@funai.edu.ng",
+      role: "Faculty Representative (Science)",
+      department: "Biochemistry",
+      faculty: "Faculty of Science",
+      status: "Formal Member",
+      joinedAt: 17882e8,
+      joinedDate: "2026-08-31T16:00:00.000Z",
+      visitorKey: "fstv-member-chinedu",
+      notes: "Science block student correspondent"
+    },
+    {
+      id: "mem_005_blessing",
+      name: "Blessing Eze",
+      email: "blessing.eze@funai.edu.ng",
+      role: "Social & Events Liaison",
+      department: "Business Administration",
+      faculty: "Faculty of Management Sciences",
+      status: "Formal Member",
+      joinedAt: 17885e8,
+      joinedDate: "2026-09-04T12:00:00.000Z",
+      visitorKey: "fstv-member-blessing",
+      notes: "Handles campus event coordination"
+    },
+    {
+      id: "mem_006_kelechi",
+      name: "Kelechi Nwankwo",
+      email: "kelechi.nwankwo@funai.edu.ng",
+      role: "Technical Contributor",
+      department: "Electrical & Electronic Engineering",
+      faculty: "Faculty of Engineering",
+      status: "Formal Member",
+      joinedAt: 17889e8,
+      joinedDate: "2026-09-09T08:00:00.000Z",
+      visitorKey: "fstv-member-kelechi",
+      notes: "Campus broadcast audio-visual team"
+    },
+    {
+      id: "mem_007_somto",
+      name: "Somtochukwu",
+      email: "somto.entertainment@gmail.com",
+      role: "Entertainment Correspondent",
+      department: "Theatre Arts",
+      faculty: "Faculty of Humanities",
+      status: "Formal Member",
+      joinedAt: 17892e8,
+      joinedDate: "2026-09-12T17:30:00.000Z",
+      visitorKey: "fstv-member-somto",
+      notes: "Covers campus concerts, hall weeks and drama"
+    },
+    {
+      id: "mem_008_precious",
+      name: "Precious Amadi",
+      email: "precious.amadi@funai.edu.ng",
+      role: "Campus Reporter",
+      department: "Economics",
+      faculty: "Faculty of Social Sciences",
+      status: "Formal Member",
+      joinedAt: 17896e8,
+      joinedDate: "2026-09-17T11:00:00.000Z",
+      visitorKey: "fstv-member-precious",
+      notes: "Hostel affairs and student opinion surveys"
+    },
+    {
+      id: "mem_009_emeka",
+      name: "Emeka Chukwu",
+      email: "emeka.chukwu@funai.edu.ng",
+      role: "Health & Welfare Desk",
+      department: "Medicine & Surgery",
+      faculty: "Faculty of Basic Medical Sciences",
+      status: "Formal Member",
+      joinedAt: 179e10,
+      joinedDate: "2026-09-22T14:15:00.000Z",
+      visitorKey: "fstv-member-emeka",
+      notes: "Medical college liaison and wellness articles"
+    },
+    {
+      id: "mem_010_chioma",
+      name: "Chioma Nwachukwu",
+      email: "chioma.nwachukwu@funai.edu.ng",
+      role: "Student Correspondent",
+      department: "Agricultural Economics",
+      faculty: "Faculty of Agriculture",
+      status: "Formal Member",
+      joinedAt: 17904e8,
+      joinedDate: "2026-09-26T10:00:00.000Z",
+      visitorKey: "fstv-member-chioma",
+      notes: "Agricultural complex updates and interviews"
+    },
+    {
+      id: "mem_011_david",
+      name: "David Okeke",
+      email: "david.okeke.law@funai.edu.ng",
+      role: "SUG & Student Rights Desk",
+      department: "Law",
+      faculty: "Faculty of Law",
+      status: "Formal Member",
+      joinedAt: 17908e8,
+      joinedDate: "2026-10-01T09:45:00.000Z",
+      visitorKey: "fstv-member-david",
+      notes: "Student Union Parliament & regulatory updates"
+    },
+    {
+      id: "mem_012_editorial",
+      name: "FSTV Editorial Desk",
+      email: "newsroom@funaispeakertv.com",
+      role: "Official Newsroom Team",
+      department: "Campus Media Network",
+      faculty: "Editorial Board",
+      status: "Executive",
+      joinedAt: 17878e8,
+      joinedDate: "2026-08-27T00:00:00.000Z",
+      visitorKey: "fstv-desk-official",
+      notes: "Main publisher account for editorial content"
+    },
+    {
+      name: "JR",
+      visitorKey: "ce6e5506-83fb-48ef-905e-2cd1deeeace0",
+      joinedAt: 1791588621487,
+      joinedDate: "2026-10-09T23:30:21.487Z",
+      id: "id_1791588621487_a4a4u8z"
+    },
+    {
+      name: "John Doe",
+      visitorKey: "test-123",
+      joinedAt: 1791678867669,
+      joinedDate: "2026-10-11T00:34:27.669Z",
+      id: "id_1791678867669_81xtzmp"
+    },
+    {
+      name: "Adaobi O.",
+      visitorKey: "vk-12345",
+      joinedAt: 1791678975638,
+      joinedDate: "2026-10-11T00:36:15.638Z",
+      id: "id_1791678975638_cmeyl63",
+      updatedAt: 1791678975650
+    },
+    {
+      name: "Chinedu Eze",
+      visitorKey: "v-1791678975646-145odd9b",
+      joinedAt: 1791678975647,
+      joinedDate: "2026-10-11T00:36:15.647Z",
+      id: "id_1791678975647_mdfsom3"
+    },
+    {
+      name: "Biggie",
+      visitorKey: "b495e8a8-2439-411a-9743-09f4d633c50e",
+      joinedAt: 1791679248886,
+      joinedDate: "2026-10-11T00:40:48.886Z",
+      id: "id_1791679248886_0u64tgr"
+    },
+    {
+      name: "Emeka Nwosu",
+      visitorKey: "vk-test-101",
+      joinedAt: 1791679873320,
+      joinedDate: "2026-10-11T00:51:13.320Z",
+      id: "id_1791679873320_dpsa27w"
+    },
+    {
+      name: "Test Student",
+      visitorKey: "vis-python",
+      joinedAt: 1791835827941,
+      joinedDate: "2026-10-12T20:10:27.941Z",
+      id: "id_1791835827941_nk20hnh"
+    },
+    {
+      name: "Emeka Okonkwo",
+      visitorKey: "vis-emeka-123",
+      joinedAt: 1791836246469,
+      joinedDate: "2026-10-12T20:17:26.469Z",
+      id: "id_1791836246469_cn6mt0q"
+    },
+    {
+      name: "Amarachi Okoro",
+      visitorKey: "v-amarachi-1",
+      joinedAt: 1792260719985,
+      joinedDate: "2026-10-17T18:11:59.985Z",
+      id: "id_1792260719985_17k14wx"
+    }
+  ],
+  newsletter: [
+    {
+      id: "sub_001",
+      email: "cutekingsley011@gmail.com",
+      name: "Kingsley",
+      joinedAt: 178786e7,
+      status: "active"
+    },
+    {
+      id: "sub_002",
+      email: "estheralaoma@gmail.com",
+      name: "Alaoma Esther",
+      joinedAt: 17879e8,
+      status: "active"
+    },
+    {
+      id: "sub_003",
+      email: "uchenna.funai@gmail.com",
+      name: "Uchenna",
+      joinedAt: 1787866e6,
+      status: "active"
+    },
+    {
+      email: "student@funai.edu.ng",
+      name: "Emeka",
+      joinedAt: 1791836246472,
+      status: "active",
+      id: "id_1791836246472_mx5x1pa"
+    }
+  ],
+  categories: [
+    {
+      id: "cat_001",
+      name: "Campus News",
+      createdAt: 178786e7
+    },
+    {
+      id: "cat_002",
+      name: "Gist",
+      createdAt: 178786e7
+    },
+    {
+      id: "cat_003",
+      name: "Events",
+      createdAt: 178786e7
+    },
+    {
+      id: "cat_004",
+      name: "SUG Updates",
+      createdAt: 178786e7
+    },
+    {
+      id: "cat_005",
+      name: "Sports",
+      createdAt: 178786e7
+    },
+    {
+      id: "cat_006",
+      name: "Academics",
+      createdAt: 178786e7
+    },
+    {
+      id: "cat_007",
+      name: "Entertainment",
+      createdAt: 178786e7
+    },
+    {
+      id: "cat_008",
+      name: "Lifestyle",
+      createdAt: 178786e7
+    }
+  ],
+  submissions: [
+    {
+      title: "",
+      text: "Hot gist from campus",
+      name: "Anonymous",
+      anonymous: true,
+      style: "hot",
+      image: "",
+      status: "approved",
+      time: "Just now",
+      id: "id_1791835827937_h274at9",
+      publishedPostId: "id_1792259711023_d67da0t"
+    },
+    {
+      title: "",
+      text: "A student lost an ID card around Faculty of Science",
+      name: "Anonymous",
+      anonymous: true,
+      style: "hot",
+      image: "",
+      status: "approved",
+      time: "Just now",
+      id: "id_1791836246467_m1w5v0n",
+      publishedPostId: "id_1792259957475_fllu2xz"
+    },
+    {
+      id: "gist_1792260719966_xnd51g",
+      title: "Huge turnout at the engineering faculty quadrangle for the i...",
+      text: "Huge turnout at the engineering faculty quadrangle for the inter-departmental quiz championship! Spirits are high.",
+      name: "Anonymous Student",
+      anonymous: true,
+      style: "hot",
+      image: "",
+      status: "approved",
+      time: "Just now",
+      createdAt: 1792260719966,
+      publishedPostId: "id_1792260719972_mhn9ux7",
+      updatedAt: 1792260719972
+    },
+    {
+      id: "gist_1792411980237_vdkzyi",
+      title: "Testing submission without token",
+      text: "Testing submission without token",
+      name: "Student",
+      anonymous: true,
+      style: "hot",
+      image: "",
+      status: "pending",
+      time: "Just now",
+      createdAt: 1792411980238
+    },
+    {
+      id: "gist_1792412087128_ct2stg",
+      title: "This is a hot campus gist about the upcoming exams and event...",
+      text: "This is a hot campus gist about the upcoming exams and events!",
+      name: "Student Observer",
+      anonymous: true,
+      style: "hot",
+      image: "",
+      status: "approved",
+      time: "Just now",
+      createdAt: 1792412087128,
+      publishedPostId: "id_1792412087132_0hoxozt",
+      updatedAt: 1792412087132
+    },
+    {
+      id: "gist_1792412679350_b0gtg3",
+      title: "Big announcement from student affairs about hostel allocatio...",
+      text: "Big announcement from student affairs about hostel allocations!",
+      name: "Campus Resident",
+      anonymous: true,
+      style: "hot",
+      image: "",
+      status: "approved",
+      time: "Just now",
+      createdAt: 1792412679350,
+      publishedPostId: "id_1792412679356_b030l2r",
+      updatedAt: 1792412679356
+    }
+  ],
+  adminActivity: [
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791566673036,
+      id: "id_1791566673036_ghfxfer"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791588534120,
+      id: "id_1791588534120_xgzcxal"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791588648298,
+      id: "id_1791588648298_7ghufyt"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791588655723,
+      id: "id_1791588655723_xu90sw3"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791588761901,
+      id: "id_1791588761901_drhegqc"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791589701984,
+      id: "id_1791589701984_p3uglhp"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791589791703,
+      id: "id_1791589791703_v5dvp3u"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791590221408,
+      id: "id_1791590221408_hbmynhc"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791590231489,
+      id: "id_1791590231489_fpe0e3d"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664120612,
+      id: "id_1791664120612_a3xzxvh"
+    },
+    {
+      action: "Failed admin login",
+      detail: "Failed attempt 1 of 5",
+      time: 1791664120632,
+      id: "id_1791664120632_1gqua3j"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664734558,
+      id: "id_1791664734558_lkplbkz"
+    },
+    {
+      action: "Failed admin login",
+      detail: "Failed attempt 1 of 5",
+      time: 1791664734564,
+      id: "id_1791664734564_px69b09"
+    },
+    {
+      action: "Failed admin login",
+      detail: "Failed attempt 2 of 5",
+      time: 1791664734568,
+      id: "id_1791664734568_slb55jq"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664818817,
+      id: "id_1791664818817_ctskx2t"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664818822,
+      id: "id_1791664818822_n7au0x5"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664818826,
+      id: "id_1791664818826_dvwwrn3"
+    },
+    {
+      action: "Failed admin login",
+      detail: "Incorrect password attempt",
+      time: 1791664818830,
+      id: "id_1791664818830_wb92mx4"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664919576,
+      id: "id_1791664919576_3j0rl4p"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664919582,
+      id: "id_1791664919582_a2e07ps"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791664919586,
+      id: "id_1791664919586_ium9chy"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791679873316,
+      id: "id_1791679873316_3hebi9b"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1791835827924,
+      id: "id_1791835827924_hezfxjy"
+    },
+    {
+      action: "Created event",
+      detail: "Matriculation Ceremony",
+      time: 1791836246475,
+      id: "id_1791836246475_a2jhxob"
+    },
+    {
+      action: "Created author",
+      detail: "Chiamaka N.",
+      time: 1791836246482,
+      id: "id_1791836246482_qxtqxe0"
+    },
+    {
+      action: "Added formal member",
+      detail: "Kelechi Obi",
+      time: 1791836246496,
+      id: "id_1791836246496_04ei3nf"
+    },
+    {
+      action: "Deleted member",
+      detail: "Kelechi Obi",
+      time: 1791836246500,
+      id: "id_1791836246500_p9tfa0w"
+    },
+    {
+      action: "Approved gist",
+      detail: "Community gist",
+      time: 1792259711026,
+      id: "id_1792259711026_76s3nrx"
+    },
+    {
+      action: "Approved gist",
+      detail: "Community gist",
+      time: 1792259957475,
+      id: "id_1792259957475_aqhkobn"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792260046429,
+      id: "id_1792260046429_1jdlj2h"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792260703269,
+      id: "id_1792260703269_jso3cf3"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792260719956,
+      id: "id_1792260719956_e0plz8g"
+    },
+    {
+      action: "Published story",
+      detail: "VC Inspects Modernized ICT Facility on FUNAI Campus",
+      time: 1792260719963,
+      id: "id_1792260719963_kbe55jo"
+    },
+    {
+      action: "Approved gist",
+      detail: "Huge turnout at the engineering faculty quadrangle for the i...",
+      time: 1792260719973,
+      id: "id_1792260719973_z5cnph5"
+    },
+    {
+      action: "Published story",
+      detail: "Test story",
+      time: 1792411980256,
+      id: "id_1792411980256_jki3e9t"
+    },
+    {
+      action: "Published story",
+      detail: "Test story",
+      time: 1792411980259,
+      id: "id_1792411980259_n7sgbuy"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792412082342,
+      id: "id_1792412082342_d4qjdvx"
+    },
+    {
+      action: "Published story",
+      detail: "Test Story Headline",
+      time: 1792412082346,
+      id: "id_1792412082346_rzrr5jc"
+    },
+    {
+      action: "Published story",
+      detail: "Test Story Headline 2",
+      time: 1792412082351,
+      id: "id_1792412082351_y52o7wm"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792412087125,
+      id: "id_1792412087125_g0ozopw"
+    },
+    {
+      action: "Approved gist",
+      detail: "This is a hot campus gist about the upcoming exams and event...",
+      time: 1792412087132,
+      id: "id_1792412087132_mpzh9nc"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792412417827,
+      id: "id_1792412417827_msnpt39"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792412417830,
+      id: "id_1792412417831_npdirc4"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792412417834,
+      id: "id_1792412417834_amly68v"
+    },
+    {
+      action: "Admin login",
+      detail: "Successful newsroom unlock",
+      time: 1792412417837,
+      id: "id_1792412417837_azzc60w"
+    },
+    {
+      action: "Failed admin login",
+      detail: "Incorrect password attempt",
+      time: 1792412417839,
+      id: "id_1792412417839_pzaq7mf"
+    },
+    {
+      action: "Failed admin login",
+      detail: "Incorrect password attempt",
+      time: 1792412417842,
+      id: "id_1792412417842_l25gotk"
+    },
+    {
+      action: "Approved gist",
+      detail: "Big announcement from student affairs about hostel allocatio...",
+      time: 1792412679357,
+      id: "id_1792412679357_gc68n22"
+    },
+    {
+      action: "Published story",
+      detail: "Campus Life 2026: Semester Kickoff",
+      time: 1792412679361,
+      id: "id_1792412679361_2wy6gqz"
+    },
+    {
+      action: "Published story",
+      detail: "Urgent notice regarding the main library power maintenance today.",
+      time: 1792412679364,
+      id: "id_1792412679365_vemjio7"
+    },
+    {
+      action: "Published story",
+      detail: "The English in the site is at the high level even terms and names of c",
+      time: 1792412820634,
+      id: "id_1792412820634_itaqmwy"
+    },
+    {
+      action: "Published story",
+      detail: "BRAND NEW TOP STORY: Campus Senate Meeting Today",
+      time: 1792413277382,
+      id: "id_1792413277382_dskwo91"
+    },
+    {
+      action: "Deleted story",
+      detail: "BRAND NEW TOP STORY: Campus Senate Meeting Today",
+      time: 1792413277414,
+      id: "id_1792413277414_y3fwlg8"
+    },
+    {
+      action: "Published story",
+      detail: "Faculty of Law Moot Court Competition Begins",
+      time: 1792697219071,
+      id: "id_1792697219071_wyuftt0"
+    },
+    {
+      action: "Deleted story",
+      detail: "Faculty of Law Moot Court Competition Begins",
+      time: 1792697219080,
+      id: "id_1792697219080_o1pzb49"
+    },
+    {
+      action: "Published story",
+      detail: "Test Story with Image",
+      time: 1792697982711,
+      id: "id_1792697982711_bpjchvc"
+    }
+  ],
+  branding: {
+    logoUrl: "/branding/logo.png"
+  }
+};
+
+// lib/appdeploy/sdk.ts
 var __filename = fileURLToPath(import.meta.url);
-var __dirname2 = path.dirname(__filename);
+var __dirname = path.dirname(__filename);
 var MemoryDatabase = class {
   tables = /* @__PURE__ */ new Map();
   backupFile = path.resolve(process.cwd(), "data-backup.json");
@@ -22727,9 +24123,9 @@ var MemoryDatabase = class {
       const candidatePaths = [
         this.backupFile,
         path.resolve(process.cwd(), "data-backup.json"),
-        path.resolve(__dirname2, "../../data-backup.json"),
-        path.resolve(__dirname2, "../data-backup.json"),
-        path.resolve(__dirname2, "data-backup.json"),
+        path.resolve(__dirname, "../../data-backup.json"),
+        path.resolve(__dirname, "../data-backup.json"),
+        path.resolve(__dirname, "data-backup.json"),
         "/var/task/data-backup.json"
       ];
       for (const p of candidatePaths) {
@@ -22764,6 +24160,9 @@ var MemoryDatabase = class {
           }
         }
       } catch {
+      }
+      if (!data && data_backup_default && typeof data_backup_default === "object") {
+        data = data_backup_default;
       }
       if (!data || typeof data !== "object") {
         data = { posts: [], polls: [], events: [] };
@@ -23675,6 +25074,8 @@ var realtimeSubscriptionRoutes = {
 };
 
 // backend/app.ts
+var __filename2 = fileURLToPath2(import.meta.url);
+var __dirname2 = path2.dirname(__filename2);
 function escapeHtml(str) {
   return String(str || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
@@ -23705,10 +25106,15 @@ function createExpressApp() {
     try {
       const id = req.params.id;
       let post = null;
-      try {
-        const resDb = await db.get("posts", [id]);
-        if (resDb && resDb[0]) post = resDb[0];
-      } catch {
+      if (data_backup_default && Array.isArray(data_backup_default.posts)) {
+        post = data_backup_default.posts.find((p) => String(p.id) === String(id));
+      }
+      if (!post) {
+        try {
+          const resDb = await db.get("posts", [id]);
+          if (resDb && resDb[0]) post = resDb[0];
+        } catch {
+        }
       }
       if (!post) {
         try {
@@ -23720,9 +25126,9 @@ function createExpressApp() {
       if (!post) {
         const candidatePaths = [
           path2.resolve(process.cwd(), "data-backup.json"),
-          path2.resolve(__dirname, "../../data-backup.json"),
-          path2.resolve(__dirname, "../data-backup.json"),
-          path2.resolve(__dirname, "data-backup.json"),
+          path2.resolve(__dirname2, "../../data-backup.json"),
+          path2.resolve(__dirname2, "../data-backup.json"),
+          path2.resolve(__dirname2, "data-backup.json"),
           "/var/task/data-backup.json",
           "/tmp/fstv-data-backup.json"
         ];
@@ -23750,10 +25156,10 @@ function createExpressApp() {
         const testPaths = [
           path2.resolve(process.cwd(), "dist", fn),
           path2.resolve(process.cwd(), "public", fn),
-          path2.resolve(__dirname, "../../dist", fn),
-          path2.resolve(__dirname, "../../public", fn),
-          path2.resolve(__dirname, "../dist", fn),
-          path2.resolve(__dirname, "../public", fn),
+          path2.resolve(__dirname2, "../../dist", fn),
+          path2.resolve(__dirname2, "../../public", fn),
+          path2.resolve(__dirname2, "../dist", fn),
+          path2.resolve(__dirname2, "../public", fn),
           `/var/task/dist/${fn}`,
           `/var/task/public/${fn}`
         ];
@@ -23838,10 +25244,15 @@ function createExpressApp() {
       try {
         storyId = decodeURIComponent(storyId).split("#")[0].split("?")[0].trim();
         let post = null;
-        try {
-          const resDb = await db.get("posts", [storyId]);
-          if (resDb && resDb[0]) post = resDb[0];
-        } catch {
+        if (data_backup_default && Array.isArray(data_backup_default.posts)) {
+          post = data_backup_default.posts.find((p) => String(p.id) === String(storyId));
+        }
+        if (!post) {
+          try {
+            const resDb = await db.get("posts", [storyId]);
+            if (resDb && resDb[0]) post = resDb[0];
+          } catch {
+          }
         }
         if (!post) {
           try {
@@ -23853,9 +25264,9 @@ function createExpressApp() {
         if (!post) {
           const backupCandidates = [
             path2.resolve(process.cwd(), "data-backup.json"),
-            path2.resolve(__dirname, "../../data-backup.json"),
-            path2.resolve(__dirname, "../data-backup.json"),
-            path2.resolve(__dirname, "data-backup.json"),
+            path2.resolve(__dirname2, "../../data-backup.json"),
+            path2.resolve(__dirname2, "../data-backup.json"),
+            path2.resolve(__dirname2, "data-backup.json"),
             "/var/task/data-backup.json",
             "/tmp/fstv-data-backup.json"
           ];
@@ -23913,9 +25324,9 @@ function createExpressApp() {
             const htmlCandidates = [
               path2.resolve(process.cwd(), "dist", "index.html"),
               path2.resolve(process.cwd(), "index.html"),
-              path2.resolve(__dirname, "../../dist/index.html"),
-              path2.resolve(__dirname, "../dist/index.html"),
-              path2.resolve(__dirname, "dist/index.html"),
+              path2.resolve(__dirname2, "../../dist/index.html"),
+              path2.resolve(__dirname2, "../dist/index.html"),
+              path2.resolve(__dirname2, "dist/index.html"),
               "/var/task/dist/index.html",
               "/var/task/index.html"
             ];
@@ -23981,10 +25392,24 @@ function createExpressApp() {
   return app2;
 }
 
-// api/index.ts
+// backend/serverless.ts
 var app = createExpressApp();
 function handler2(req, res) {
-  return app(req, res);
+  try {
+    return app(req, res, (err) => {
+      if (err) {
+        console.error("[Serverless Handler Error]", err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Internal server error", detail: String(err) });
+        }
+      }
+    });
+  } catch (syncErr) {
+    console.error("[Serverless Synchronous Error]", syncErr);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error", detail: String(syncErr) });
+    }
+  }
 }
 export {
   handler2 as default

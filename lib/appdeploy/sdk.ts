@@ -8,6 +8,7 @@ import type { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import embeddedBackup from '../../data-backup.json';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,6 +74,10 @@ class MemoryDatabase {
           }
         }
       } catch {}
+
+      if (!data && embeddedBackup && typeof embeddedBackup === 'object') {
+        data = embeddedBackup;
+      }
 
       if (!data || typeof data !== 'object') {
         data = { posts: [], polls: [], events: [] };
