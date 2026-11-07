@@ -104,23 +104,11 @@ export default function AdminDashboard({back,toast,logout}:Props){const token=lo
     setDeleteConfirm(null);
     setOpenMenu(null);
     try{
-      let activeToken = token || localStorage.getItem('fstv-admin-token') || 'Speaker6969';
+      let activeToken = token || localStorage.getItem('fstv-admin-token') || '';
       await api.delete(`/api/admin/posts/${id}?token=${encodeURIComponent(activeToken)}`);
       toast('Story deleted');
       await load();
     }catch(err:any){
-      if(err?.message?.includes('Admin access') || err?.message?.includes('sign in')){
-        try{
-          const authRes = await api.post('/api/admin/login',{password:'Speaker6969'});
-          if(authRes.data?.token){
-            localStorage.setItem('fstv-admin-token',authRes.data.token);
-            await api.delete(`/api/admin/posts/${id}?token=${encodeURIComponent(authRes.data.token)}`);
-            toast('Story deleted');
-            await load();
-            return;
-          }
-        }catch{}
-      }
       toast(err?.message || 'Could not delete story');
       await load();
     }
@@ -158,23 +146,11 @@ export default function AdminDashboard({back,toast,logout}:Props){const token=lo
   }
   async function moderate(id:string,status:string){
     try{
-      let activeToken = token || localStorage.getItem('fstv-admin-token') || 'Speaker6969';
+      let activeToken = token || localStorage.getItem('fstv-admin-token') || '';
       await api.put(`/api/admin/submissions/${id}`,{status,token:activeToken});
       toast(status==='approved'?'Gist approved and published to newsroom!':'Gist rejected');
       await load();
     }catch(err:any){
-      if(err?.message?.includes('Admin access') || err?.message?.includes('sign in')){
-        try{
-          const authRes = await api.post('/api/admin/login',{password:'Speaker6969'});
-          if(authRes.data?.token){
-            localStorage.setItem('fstv-admin-token',authRes.data.token);
-            await api.put(`/api/admin/submissions/${id}`,{status,token:authRes.data.token});
-            toast(status==='approved'?'Gist approved and published to newsroom!':'Gist rejected');
-            await load();
-            return;
-          }
-        }catch{}
-      }
       const msg = typeof err === 'string' ? err : (err?.message || (status === 'approved' ? 'Could not approve gist' : 'Could not reject gist'));
       toast(msg);
     }
